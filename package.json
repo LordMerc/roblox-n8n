@@ -1,16 +1,19 @@
 {
 	"name": "n8n-nodes-roblox-cloud",
 	"version": "1.1.4",
-	"description": "",
+	"description": "A n8n community node for the Roblox Cloud API",
 	"keywords": [
 		"n8n-community-node-package"
 	],
 	"license": "MIT",
 	"homepage": "",
-	"author": "Mike Boyd <lordmercrblx.com>",
+	"author": {
+		"name": "Mike Boyd",
+		"email": "lordmercrbx@gmail.com"
+	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/<...>/n8n-nodes-<...>.git"
+		"url": "https://github.com/LordMerc/roblox-cloud-n8n"
 	},
 	"engines": {
 		"node": ">=20.15"
@@ -22,7 +25,7 @@
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
-		"prepublishOnly": "npm build && npm lint -c .eslintrc.prepublish.js nodes credentials package.json"
+		"prepublishOnly": "npm run build && npm run lint -c .eslintrc.prepublish.js nodes credentials package.json"
 	},
 	"files": [
 		"dist"
