@@ -1,9 +1,5 @@
-import {
-	INodeType,
-	INodeTypeDescription,
-	IExecuteFunctions,
-	NodeConnectionType,
-} from 'n8n-workflow';
+import { INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflow';
+
 import { groupOperations, groupFields } from './GroupDescription';
 
 export class Roblox implements INodeType {
@@ -12,17 +8,25 @@ export class Roblox implements INodeType {
 		name: 'roblox',
 		icon: 'file:roblox.svg',
 		group: ['transform'],
-		version: 1,
+		version: 1.5,
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
-		description: 'Interact with Roblox API',
+		description: 'Interact with Roblox Cloud API',
 		defaults: {
 			name: 'Roblox',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
+		requestDefaults: {
+			baseURL: 'https://apis.roblox.com',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-api-key': '={{ $credentials.apiKey }}',
+				Accept: 'application/json',
+			},
+		},
 		credentials: [
 			{
-				name: 'robloxApi',
+				name: 'robloxCloudApi',
 				required: true,
 			},
 		],
@@ -40,38 +44,8 @@ export class Roblox implements INodeType {
 				],
 				default: 'group',
 			},
-			...groupFields,
 			...groupOperations,
+			...groupFields,
 		],
 	};
-
-	async execute(this: IExecuteFunctions) {
-		const items = this.getInputData();
-		const returnData = [];
-
-		for (let i = 0; i < items.length; i++) {
-			try {
-				// Example: get groupId from parameters
-				const groupId = this.getNodeParameter('groupId', i) as string;
-
-				// Get credentials
-				const credentials = await this.getCredentials('robloxApi');
-
-				// Example: Make an API call (replace with actual implementation)
-				const response = await this.helpers.request({
-					method: 'GET',
-					url: `https://apis.roblox.com/cloud/v2/groups/${groupId}`,
-					headers: {
-						'Content-Type': 'application/json',
-						Authorization: `Bearer ${credentials.apiToken}`,
-					},
-				});
-				returnData.push({ json: response });
-			} catch (error) {
-				//throw new Error(`Roblox Node Error: ${error}`);
-			}
-		}
-
-		return [this.helpers.returnJsonArray(returnData)];
-	}
 }

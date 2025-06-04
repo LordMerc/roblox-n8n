@@ -1,11 +1,11 @@
-import { ICredentialType, INodeProperties } from 'n8n-workflow';
+import { Icon, ICredentialType, INodeProperties } from 'n8n-workflow';
 
 export class RobloxCloudApi implements ICredentialType {
 	name = 'robloxCloudApi';
 	displayName = 'Roblox Cloud API';
 	documentationUrl = 'https://create.roblox.com/docs/cloud';
 	domain = 'https://apis.roblox.com';
-
+	icon?: Icon | undefined;
 	properties: INodeProperties[] = [
 		{
 			displayName: 'API Key Type',
@@ -28,7 +28,7 @@ export class RobloxCloudApi implements ICredentialType {
 		},
 		{
 			displayName: 'API Token',
-			name: 'apiToken',
+			name: 'apiKey',
 			type: 'string',
 			typeOptions: {
 				password: true,
