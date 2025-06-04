@@ -1,7 +1,7 @@
 {
-	"name": "n8n-nodes-roblox-cloud",
-	"version": "1.4.6",
-	"description": "A n8n community node for the Roblox Cloud API",
+	"name": "n8n-nodes-roblox",
+	"version": "1.4.7",
+	"description": "A n8n community node for the Roblox API",
 	"keywords": [
 		"n8n-community-node-package"
 	],
@@ -13,7 +13,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/LordMerc/roblox-cloud-n8n"
+		"url": "https://github.com/LordMerc/roblox-n8n"
 	},
 	"engines": {
 		"node": ">=20.15"
@@ -37,7 +37,7 @@
 			"dist/credentials/RobloxCloudApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Roblox/Roblox.node.js"
+			"dist/nodes/Roblox/RobloxCloud.node.js"
 		]
 	},
 	"devDependencies": {

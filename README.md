@@ -1,6 +1,6 @@
 ![Banner image](https://user-images.githubusercontent.com/10284570/173569848-c624317f-42b1-45a6-ab09-f0ea3c247648.png)
 
-# n8n-nodes-roblox-cloud
+# n8n-nodes-roblox
 
 This project provides custom community nodes for [n8n](https://n8n.io) that integrate with the [Roblox Open Cloud API](https://create.roblox.com/docs/cloud). It allows you to connect your Roblox experience with automated workflows in n8n — including data access, place publishing, messaging, and more.
 

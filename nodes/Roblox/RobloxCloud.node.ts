@@ -3,17 +3,18 @@ import { INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflo
 import { groupOperations, groupFields } from './Group/GroupDescription';
 import { userOperations, userFields } from './User/UserDescription';
 
-export class Roblox implements INodeType {
+export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Roblox',
-		name: 'roblox',
+		displayName: 'Roblox Cloud',
+		name: 'robloxCloud',
 		icon: 'file:roblox.svg',
 		group: ['transform'],
+		usableAsTool: true,
 		version: 1.5,
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
 		description: 'Interact with Roblox Cloud API',
 		defaults: {
-			name: 'Roblox',
+			name: 'Roblox Cloud',
 		},
 		inputs: [NodeConnectionType.Main],
 		outputs: [NodeConnectionType.Main],
