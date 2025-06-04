@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-roblox",
-	"version": "1.4.7",
+	"version": "1.5.1",
 	"description": "A n8n community node for the Roblox API",
 	"keywords": [
 		"n8n-community-node-package"
@@ -37,7 +37,8 @@
 			"dist/credentials/RobloxCloudApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/Roblox/RobloxCloud.node.js"
+			"dist/nodes/Roblox/RobloxCloud.node.js",
+			"dist/nodes/Roblox/RobloxLegacy.node.js"
 		]
 	},
 	"devDependencies": {
