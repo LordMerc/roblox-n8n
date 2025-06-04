@@ -1,6 +1,7 @@
 import { INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflow';
 
-import { groupOperations, groupFields } from './GroupDescription';
+import { groupOperations, groupFields } from './Group/GroupDescription';
+import { userOperations, userFields } from './User/UserDescription';
 
 export class Roblox implements INodeType {
 	description: INodeTypeDescription = {
@@ -41,11 +42,18 @@ export class Roblox implements INodeType {
 						name: 'Group',
 						value: 'group',
 					},
+					{
+						name: 'User',
+						value: 'user',
+					},
 				],
 				default: 'group',
 			},
 			...groupOperations,
 			...groupFields,
+
+			...userOperations,
+			...userFields,
 		],
 	};
 }

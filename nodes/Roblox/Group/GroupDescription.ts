@@ -16,7 +16,7 @@ export const groupOperations: INodeProperties[] = [
 				name: 'Get Group',
 				value: 'get_group',
 				description: 'Retrieve a group',
-				action: 'Get group by ID',
+				action: 'Get group',
 				routing: {
 					request: {
 						method: 'GET',
@@ -28,10 +28,45 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Group Memberships',
+				value: 'get_memberships',
+				description: 'Retrieve a groups memberships',
+				action: 'Get group memberships',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/groups/{{$parameter["groupId"]}}/memberships',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+						qs: {
+							maxPageSize: '={{ $parameter["arguments_memberships"].maxPageSize }}',
+							pageToken: '={{ $parameter["arguments_memberships"].pageToken }}',
+							filter: '={{ $parameter["arguments_memberships"].filter }}',
+						},
+					},
+				},
+			},
+			{
+				name: 'Get Group Roles',
+				value: 'get_roles',
+				description: 'Retrieve group roles',
+				action: 'Get group roles',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/groups/{{$parameter["groupId"]}}/roles',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+					},
+				},
+			},
+			{
 				name: 'Get Group Shout',
 				value: 'get_shout',
 				description: 'Retrieve a group shout',
-				action: 'Get group shout by ID',
+				action: 'Get group shout',
 				routing: {
 					request: {
 						method: 'GET',
@@ -43,30 +78,10 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
-				name: 'Get Group Roles',
-				value: 'get_roles',
-				description: 'Retrieve a group roles',
-				action: 'Get group roles by ID',
-				routing: {
-					request: {
-						method: 'GET',
-						url: '=/cloud/v2/groups/{{$parameter["groupId"]}}/memberships',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
-						qs: {
-							maxPageSize: '={{ $parameter["arguments"].maxPageSize }}',
-							pageToken: '={{ $parameter["arguments"].pageToken }}',
-							filter: '={{ $parameter["arguments"].filter }}',
-						},
-					},
-				},
-			},
-			{
 				name: 'Update Member Role',
 				value: 'update_member_role',
 				description: "Update a member's role in the group",
-				action: 'Update member role in group',
+				action: 'Update group member role',
 				routing: {
 					request: {
 						method: 'PATCH',
@@ -96,7 +111,7 @@ export const groupFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['get_group', 'get_shout', 'update_member_role', 'get_roles'],
+				operation: ['get_group', 'get_shout', 'update_member_role', 'get_memberships', 'get_roles'],
 			},
 		},
 	},
@@ -116,14 +131,14 @@ export const groupFields: INodeProperties[] = [
 	},
 	{
 		displayName: 'Query Parameters',
-		name: 'arguments',
+		name: 'arguments_memberships',
 		default: {},
 		type: 'collection',
 		description: "The request's query parameters",
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['get_roles'],
+				operation: ['get_memberships'],
 			},
 		},
 		options: [
