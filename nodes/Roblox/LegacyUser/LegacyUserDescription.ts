@@ -1,6 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
 
-export const userOperations: INodeProperties[] = [
+export const legacyUserOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
 		name: 'operation',
@@ -34,7 +34,7 @@ export const userOperations: INodeProperties[] = [
 	},
 ];
 
-export const userFields: INodeProperties[] = [
+export const legacyUserFields: INodeProperties[] = [
 	{
 		displayName: 'User ID',
 		name: 'userId',

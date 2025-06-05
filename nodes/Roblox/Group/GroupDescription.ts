@@ -78,6 +78,26 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Update Group Shout',
+				value: 'update_group_shout',
+				description: 'Update a group shout',
+				action: 'Update group shout',
+				routing: {
+					request: {
+						method: 'PATCH',
+						url: '=/legacy-groups/v1/groups/{{ $parameter["groupId"] }}/status',
+						body: {
+							message: '={{ $parameter["message"] }}',
+						},
+
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+							'Content-Type': 'application/json',
+						},
+					},
+				},
+			},
+			{
 				name: 'Update Member Role',
 				value: 'update_member_role',
 				description: "Update a member's role in the group",
@@ -111,7 +131,14 @@ export const groupFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['get_group', 'get_shout', 'update_member_role', 'get_memberships', 'get_roles'],
+				operation: [
+					'get_group',
+					'get_shout',
+					'update_member_role',
+					'get_memberships',
+					'get_roles',
+					'update_group_shout',
+				],
 			},
 		},
 	},
@@ -126,6 +153,20 @@ export const groupFields: INodeProperties[] = [
 			show: {
 				resource: ['group'],
 				operation: ['update_member_role'],
+			},
+		},
+	},
+	{
+		displayName: 'Shout Message',
+		name: 'message',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'The message to post as the group shout',
+		displayOptions: {
+			show: {
+				resource: ['group'],
+				operation: ['update_group_shout'],
 			},
 		},
 	},
