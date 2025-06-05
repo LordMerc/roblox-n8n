@@ -30,7 +30,7 @@ export const groupOperations: INodeProperties[] = [
 			{
 				name: 'Get Group Memberships',
 				value: 'get_memberships',
-				description: 'Retrieve a groups memberships',
+				description: "Retrieve a group's memberships",
 				action: 'Get group memberships',
 				routing: {
 					request: {

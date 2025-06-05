@@ -2,7 +2,8 @@ import { INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflo
 
 import { groupOperations, groupFields } from './Group/GroupDescription';
 import { userOperations, userFields } from './User/UserDescription';
-
+import { universeOperations, universeFields } from './Universe/UniverseDescription';
+import { placeOperations, placeFields } from './Place/PlaceDescription';
 export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Cloud',
@@ -47,6 +48,14 @@ export class RobloxCloud implements INodeType {
 						name: 'User',
 						value: 'user',
 					},
+					{
+						name: 'Universe',
+						value: 'universe',
+					},
+					{
+						name: 'Place',
+						value: 'place',
+					},
 				],
 				default: 'group',
 			},
@@ -55,6 +64,12 @@ export class RobloxCloud implements INodeType {
 
 			...userOperations,
 			...userFields,
+
+			...universeOperations,
+			...universeFields,
+
+			...placeOperations,
+			...placeFields,
 		],
 	};
 }

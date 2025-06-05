@@ -29,8 +29,8 @@ Before getting started, ensure you have the following:
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/LordMerc/roblox-cloud-n8n.git
-   cd roblox-cloud-n8n
+   git clone https://github.com/LordMerc/roblox-n8n.git
+   cd roblox-n8n
    ```
 
 2. Install dependencies:

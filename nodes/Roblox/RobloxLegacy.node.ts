@@ -1,7 +1,7 @@
 import { INodeType, INodeTypeDescription, NodeConnectionType } from 'n8n-workflow';
 
 import { placeOperations, placeFields } from './LegacyPlace/LegacyPlaceDescription';
-
+import { userOperations, userFields } from './LegacyUser/LegacyUserDescription';
 export class RobloxLegacy implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Legacy',
@@ -28,11 +28,18 @@ export class RobloxLegacy implements INodeType {
 						name: 'Legacy Place',
 						value: 'legacy_Place',
 					},
+					{
+						name: 'Legacy User',
+						value: 'legacy_User',
+					},
 				],
 				default: 'legacy_Place',
 			},
 			...placeOperations,
 			...placeFields,
+
+			...userOperations,
+			...userFields,
 		],
 	};
 }
