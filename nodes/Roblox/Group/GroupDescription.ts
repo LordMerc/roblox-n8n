@@ -13,6 +13,36 @@ export const groupOperations: INodeProperties[] = [
 		},
 		options: [
 			{
+				name: 'Accept Group Join Request',
+				value: 'accept_join_request',
+				description: 'Accept a group join request',
+				action: 'Accept group join request',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/join-requests/{{ $parameter["joinRequestId"] }}:accept',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+					},
+				},
+			},
+			{
+				name: 'Decline Group Join Request',
+				value: 'decline_join_request',
+				description: 'Decline a group join request',
+				action: 'Decline group join request',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/join-requests/{{ $parameter["joinRequestId"] }}:decline',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+					},
+				},
+			},
+			{
 				name: 'Get Group',
 				value: 'get_group',
 				description: 'Retrieve a group',
@@ -20,7 +50,7 @@ export const groupOperations: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/groups/{{$parameter["groupId"]}}',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}',
 						headers: {
 							'x-api-key': '={{ $credentials.apiKey }}',
 						},
@@ -35,7 +65,7 @@ export const groupOperations: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/groups/{{$parameter["groupId"]}}/memberships',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/memberships',
 						headers: {
 							'x-api-key': '={{ $credentials.apiKey }}',
 						},
@@ -48,14 +78,29 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
-				name: 'Get Group Roles',
-				value: 'get_roles',
-				description: 'Retrieve group roles',
-				action: 'Get group roles',
+				name: 'Get Group Role',
+				value: 'get_role',
+				description: 'Retrieve a group role',
+				action: 'Get group role',
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/groups/{{$parameter["groupId"]}}/roles',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/roles/{{ $parameter["roleId"] }}',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+					},
+				},
+			},
+			{
+				name: 'Get Group Roles',
+				value: 'get_roles',
+				description: 'Retrieve group roles',
+				action: 'Get many group roles',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/roles',
 						headers: {
 							'x-api-key': '={{ $credentials.apiKey }}',
 						},
@@ -70,7 +115,22 @@ export const groupOperations: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/groups/{{$parameter["groupId"]}}/shout',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/shout',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+					},
+				},
+			},
+			{
+				name: 'Get Join Requests',
+				value: 'get_join_requests',
+				description: "Retrieve a group's join requests",
+				action: 'Get group join requests',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/join-requests',
 						headers: {
 							'x-api-key': '={{ $credentials.apiKey }}',
 						},
@@ -138,7 +198,24 @@ export const groupFields: INodeProperties[] = [
 					'get_memberships',
 					'get_roles',
 					'update_group_shout',
+					'get_join_requests',
+					'accept_join_request',
+					'decline_join_request',
 				],
+			},
+		},
+	},
+	{
+		displayName: 'Join Request ID',
+		name: 'joinRequestId',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'The ID of the join request to accept or decline',
+		displayOptions: {
+			show: {
+				resource: ['group'],
+				operation: ['accept_join_request', 'decline_join_request'],
 			},
 		},
 	},
@@ -214,11 +291,11 @@ export const groupFields: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		required: true,
-		description: 'The ID of the role to assign to the member',
+		description: 'The ID of the role',
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['update_member_role'],
+				operation: ['update_member_role', 'get_role'],
 			},
 		},
 	},

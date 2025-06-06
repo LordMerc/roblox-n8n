@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-roblox",
-	"version": "1.7.1",
+	"version": "2.2.3",
 	"description": "A n8n community node for the Roblox API",
 	"keywords": [
 		"n8n-community-node-package"
