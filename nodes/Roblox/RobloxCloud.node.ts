@@ -4,6 +4,7 @@ import { groupOperations, groupFields } from './Group/GroupDescription';
 import { userOperations, userFields } from './User/UserDescription';
 import { universeOperations, universeFields } from './Universe/UniverseDescription';
 import { placeOperations, placeFields } from './Place/PlaceDescription';
+import { engineOperations, engineFields } from './Engine/EngineDescription';
 export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Cloud',
@@ -41,24 +42,31 @@ export class RobloxCloud implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Engine',
+						value: 'engine',
+					},
+					{
 						name: 'Group',
 						value: 'group',
 					},
 					{
-						name: 'User',
-						value: 'user',
+						name: 'Place',
+						value: 'place',
 					},
 					{
 						name: 'Universe',
 						value: 'universe',
 					},
 					{
-						name: 'Place',
-						value: 'place',
+						name: 'User',
+						value: 'user',
 					},
 				],
 				default: 'group',
 			},
+			...engineOperations,
+			...engineFields,
+
 			...groupOperations,
 			...groupFields,
 

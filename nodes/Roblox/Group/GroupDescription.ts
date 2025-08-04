@@ -145,7 +145,7 @@ export const groupOperations: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'PATCH',
-						url: '=/legacy-groups/v1/groups/{{ $parameter["groupId"] }}/status',
+						url: '=/v1/groups/{{ $parameter["groupId"] }}/status',
 						body: {
 							message: '={{ $parameter["message"] }}',
 						},
