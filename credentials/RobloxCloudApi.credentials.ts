@@ -16,12 +16,7 @@ export class RobloxCloudApi implements ICredentialType {
 					name: 'User API Key',
 					value: 'user',
 					description: 'API key for user-level access',
-				},
-				{
-					name: 'Group API Key',
-					value: 'group',
-					description: 'API key for group-level access',
-				},
+				}
 			],
 			default: 'user',
 			description: 'Select the type of API key you are using.',

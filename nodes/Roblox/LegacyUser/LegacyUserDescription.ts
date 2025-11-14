@@ -29,6 +29,29 @@ export const legacyUserOperations: INodeProperties[] = [
 					},
 				},
 			},
+			{
+				name: 'Get Usernames From User IDs',
+				value: 'get_usernames_from_user_ids',
+				action: 'Get usernames from user ids',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=https://users.roblox.com/v1/users',
+						body: {
+							userIds:
+								'={{ ($parameter["arguments_user_names_from_user_ids"].userNamesFromUserIdsTable.userIds || "")' +
+								'.split(",")' +
+								'.map(id => parseInt(id.trim(), 10))' +
+								'.filter(n => Number.isFinite(n)) }}',
+							excludeBannedUsers:
+								'={{ $parameter["arguments_user_names_from_user_ids"].userNamesFromUserIdsTable.excludeBannedUsers }}',
+						},
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					},
+				},
+			},
 		],
 		default: 'get_username_history',
 	},
@@ -116,5 +139,51 @@ export const legacyUserFields: INodeProperties[] = [
 				description: 'Order of the results',
 			},
 		],
+	},
+	{
+		displayName: 'User IDs From Usernames',
+		name: 'arguments_user_names_from_user_ids',
+		placeholder: 'Add Metadata',
+		type: 'fixedCollection',
+		default: {},
+		typeOptions: {
+			multipleValues: false,
+		},
+		options: [
+			{
+				name: 'userNamesFromUserIdsTable',
+				displayName: 'User Names',
+				values: [
+					{
+						displayName: 'User IDs',
+						name: 'userIds',
+						type: 'string',
+						default: '',
+						description:
+							'Comma-separated list of user IDs to retrieve usernames for. Maximum 1000 user IDs.',
+					},
+					{
+						displayName: 'Exclude Banned Users',
+						name: 'excludeBannedUsers',
+						type: 'boolean',
+						default: true,
+						description: 'Whether to exclude banned users from the results. Default is true.',
+					},
+				],
+			},
+		],
+		displayOptions: {
+			// the resources and operations to display this element with
+			show: {
+				resource: [
+					// comma-separated list of resource names
+					'legacy_User',
+				],
+				operation: [
+					// comma-separated list of operation names
+					'get_usernames_from_user_ids',
+				],
+			},
+		},
 	},
 ];
