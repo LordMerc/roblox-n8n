@@ -5,6 +5,8 @@ import {
 	INodeExecutionData,
 	IDataObject,
 	NodeConnectionType,
+	NodeApiError,
+	JsonObject,
 } from 'n8n-workflow';
 
 // Action types from the Roblox API (0-69)
@@ -36,7 +38,7 @@ const ACTION_TYPE_OPTIONS = [
 	{ name: 'Rename', value: '26' },
 	{ name: 'Change Description', value: '27' },
 	{ name: 'Invite to Clan', value: '28' },
-	{ name: 'Kick from Clan', value: '29' },
+	{ name: 'Kick From Clan', value: '29' },
 	{ name: 'Cancel Clan Invite', value: '30' },
 	{ name: 'Buy Clan', value: '31' },
 	{ name: 'Create Group Asset', value: '32' },
@@ -189,10 +191,7 @@ export class RobloxGroupAuditLogTrigger implements INodeType {
 
 			return [returnData];
 		} catch (error) {
-			if (error instanceof Error) {
-				throw new Error(`Failed to fetch audit log: ${error.message}`);
-			}
-			throw error;
+			throw new NodeApiError(this.getNode(), error as JsonObject);
 		}
 	}
 }
