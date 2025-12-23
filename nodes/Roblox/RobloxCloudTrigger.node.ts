@@ -60,14 +60,14 @@ const ACTION_TYPE_OPTIONS = [
 
 export class RobloxCloudTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Roblox Cloud Trigger',
+		displayName: 'Roblox Group Audit Log Trigger',
 		name: 'robloxCloudTrigger',
 		icon: 'file:roblox.svg',
 		group: ['trigger'],
 		version: 1,
 		description: 'Triggers when new entries appear in a Roblox Group audit log',
 		defaults: {
-			name: 'Roblox Cloud Trigger',
+			name: 'On New Group Audit Log Entry',
 		},
 		polling: true,
 		inputs: [],
@@ -172,10 +172,10 @@ export class RobloxCloudTrigger implements INodeType {
 					return entryDate > lastCreatedDate;
 				});
 			} else {
-				// First poll - just set the state, don't return any entries
-				// This ensures only truly NEW events after activation will trigger
+				// First poll - return the latest entry for testing and set the state
+				// Subsequent polls will only return entries newer than this
 				webhookData.lastCreated = auditLogs[0].created as string;
-				return null;
+				newEntries = [auditLogs[0]];
 			}
 
 			if (newEntries.length === 0) {
