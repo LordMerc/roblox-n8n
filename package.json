@@ -38,7 +38,8 @@
 		],
 		"nodes": [
 			"dist/nodes/Roblox/RobloxCloud.node.js",
-			"dist/nodes/Roblox/RobloxLegacy.node.js"
+			"dist/nodes/Roblox/RobloxLegacy.node.js",
+			"dist/nodes/Roblox/RobloxGroupAuditLogTrigger.node.js"
 		]
 	},
 	"devDependencies": {
