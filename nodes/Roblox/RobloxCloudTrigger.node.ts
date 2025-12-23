@@ -224,8 +224,10 @@ export class RobloxCloudTrigger implements INodeType {
 						return entryDate > lastCreatedDate;
 					});
 				} else {
+					// First poll - just set state, don't return any data
+					// Only truly NEW events after activation will trigger
 					webhookData.lastCreated = auditLogs[0].created as string;
-					newEntries = [auditLogs[0]];
+					return null;
 				}
 
 				if (newEntries.length === 0) {
@@ -272,11 +274,11 @@ export class RobloxCloudTrigger implements INodeType {
 					return !seenRequestIds.includes(requestPath);
 				});
 
-				// First poll - return latest and initialize tracking
+				// First poll - just set state, don't return any data
+				// Only truly NEW events after activation will trigger
 				if (seenRequestIds.length === 0 && joinRequests.length > 0) {
 					webhookData.seenRequestIds = joinRequests.map((r) => r.path as string);
-					const returnData: INodeExecutionData[] = [{ json: joinRequests[0] }];
-					return [returnData];
+					return null;
 				}
 
 				if (newRequests.length === 0) {
