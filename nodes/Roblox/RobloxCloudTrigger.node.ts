@@ -60,14 +60,14 @@ const ACTION_TYPE_OPTIONS = [
 
 export class RobloxCloudTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Roblox Group Audit Log Trigger',
+		displayName: 'Roblox Cloud Trigger',
 		name: 'robloxCloudTrigger',
 		icon: 'file:roblox.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Triggers when new entries appear in a Roblox Group audit log',
+		description: 'Triggers on Roblox Group events (Audit Log, Join Requests)',
 		defaults: {
-			name: 'On New Group Audit Log Entry',
+			name: 'Roblox Cloud Trigger',
 		},
 		polling: true,
 		inputs: [],
@@ -80,6 +80,26 @@ export class RobloxCloudTrigger implements INodeType {
 		],
 		properties: [
 			{
+				displayName: 'Event Type',
+				name: 'eventType',
+				type: 'options',
+				default: 'auditLog',
+				required: true,
+				description: 'The type of event to trigger on',
+				options: [
+					{
+						name: 'Group Audit Log Entry',
+						value: 'auditLog',
+						description: 'Triggers when new audit log entries appear',
+					},
+					{
+						name: 'Group Join Request',
+						value: 'joinRequest',
+						description: 'Triggers when new join requests appear',
+					},
+				],
+			},
+			{
 				displayName: 'Group ID',
 				name: 'groupId',
 				type: 'string',
@@ -87,6 +107,7 @@ export class RobloxCloudTrigger implements INodeType {
 				required: true,
 				description: 'The Roblox group ID to monitor',
 			},
+			// Audit Log specific fields
 			{
 				displayName: 'Action Type Filter',
 				name: 'actionType',
@@ -94,6 +115,11 @@ export class RobloxCloudTrigger implements INodeType {
 				default: '',
 				description: 'Filter for specific audit log action types',
 				options: ACTION_TYPE_OPTIONS,
+				displayOptions: {
+					show: {
+						eventType: ['auditLog'],
+					},
+				},
 			},
 			{
 				displayName: 'User ID Filter',
@@ -101,6 +127,11 @@ export class RobloxCloudTrigger implements INodeType {
 				type: 'string',
 				default: '',
 				description: 'Filter audit logs for a specific user ID (optional)',
+				displayOptions: {
+					show: {
+						eventType: ['auditLog'],
+					},
+				},
 			},
 			{
 				displayName: 'Limit',
@@ -114,85 +145,162 @@ export class RobloxCloudTrigger implements INodeType {
 					{ name: '50', value: '50' },
 					{ name: '100', value: '100' },
 				],
+				displayOptions: {
+					show: {
+						eventType: ['auditLog'],
+					},
+				},
+			},
+			// Join Request specific fields
+			{
+				displayName: 'Max Results Per Poll',
+				name: 'maxPageSize',
+				type: 'options',
+				default: '20',
+				description: 'Maximum join requests to return per poll (max 20)',
+				options: [
+					{ name: '5', value: '5' },
+					{ name: '10', value: '10' },
+					{ name: '20', value: '20' },
+				],
+				displayOptions: {
+					show: {
+						eventType: ['joinRequest'],
+					},
+				},
 			},
 		],
 	};
 
 	async poll(this: IPollFunctions): Promise<INodeExecutionData[][] | null> {
+		const eventType = this.getNodeParameter('eventType') as string;
 		const groupId = this.getNodeParameter('groupId') as string;
-		const actionType = this.getNodeParameter('actionType') as string;
-		const userId = this.getNodeParameter('userId') as string;
-		const limit = this.getNodeParameter('limit') as string;
-
 		const credentials = await this.getCredentials('robloxCloudApi');
-
-		// Get workflow static data to track last poll
 		const webhookData = this.getWorkflowStaticData('node');
-		const lastCreated = webhookData.lastCreated as string | undefined;
 
-		// Build query parameters
-		const qs: IDataObject = {
-			limit,
-			sortOrder: 'Desc', // Get newest first
-		};
+		if (eventType === 'auditLog') {
+			// Poll Audit Log
+			const actionType = this.getNodeParameter('actionType') as string;
+			const userId = this.getNodeParameter('userId') as string;
+			const limit = this.getNodeParameter('limit') as string;
+			const lastCreated = webhookData.lastCreated as string | undefined;
 
-		if (actionType) {
-			qs.actionType = actionType;
-		}
+			const qs: IDataObject = {
+				limit,
+				sortOrder: 'Desc',
+			};
 
-		if (userId) {
-			qs.userId = userId;
-		}
-
-		try {
-			const response = await this.helpers.httpRequest({
-				method: 'GET',
-				url: `https://apis.roblox.com/legacy-groups/v1/groups/${groupId}/audit-log`,
-				headers: {
-					'x-api-key': credentials.apiKey as string,
-					Accept: 'application/json',
-				},
-				qs,
-				json: true,
-			});
-
-			const auditLogs = response.data as IDataObject[];
-
-			if (!auditLogs || auditLogs.length === 0) {
-				return null;
+			if (actionType) {
+				qs.actionType = actionType;
+			}
+			if (userId) {
+				qs.userId = userId;
 			}
 
-			// Filter to only new entries since last poll
-			let newEntries: IDataObject[];
-
-			if (lastCreated) {
-				const lastCreatedDate = new Date(lastCreated);
-				newEntries = auditLogs.filter((entry) => {
-					const entryDate = new Date(entry.created as string);
-					return entryDate > lastCreatedDate;
+			try {
+				const response = await this.helpers.httpRequest({
+					method: 'GET',
+					url: `https://apis.roblox.com/legacy-groups/v1/groups/${groupId}/audit-log`,
+					headers: {
+						'x-api-key': credentials.apiKey as string,
+						Accept: 'application/json',
+					},
+					qs,
+					json: true,
 				});
-			} else {
-				// First poll - return the latest entry for testing and set the state
-				// Subsequent polls will only return entries newer than this
+
+				const auditLogs = response.data as IDataObject[];
+
+				if (!auditLogs || auditLogs.length === 0) {
+					return null;
+				}
+
+				let newEntries: IDataObject[];
+
+				if (lastCreated) {
+					const lastCreatedDate = new Date(lastCreated);
+					newEntries = auditLogs.filter((entry) => {
+						const entryDate = new Date(entry.created as string);
+						return entryDate > lastCreatedDate;
+					});
+				} else {
+					webhookData.lastCreated = auditLogs[0].created as string;
+					newEntries = [auditLogs[0]];
+				}
+
+				if (newEntries.length === 0) {
+					return null;
+				}
+
 				webhookData.lastCreated = auditLogs[0].created as string;
-				newEntries = [auditLogs[0]];
+
+				const returnData: INodeExecutionData[] = newEntries.map((entry) => ({
+					json: entry,
+				}));
+
+				return [returnData];
+			} catch (error) {
+				throw new NodeApiError(this.getNode(), error as JsonObject);
 			}
+		} else if (eventType === 'joinRequest') {
+			// Poll Join Requests
+			const maxPageSize = this.getNodeParameter('maxPageSize') as string;
+			const seenRequestIds = (webhookData.seenRequestIds as string[]) || [];
 
-			if (newEntries.length === 0) {
-				return null;
+			try {
+				const response = await this.helpers.httpRequest({
+					method: 'GET',
+					url: `https://apis.roblox.com/cloud/v2/groups/${groupId}/join-requests`,
+					headers: {
+						'x-api-key': credentials.apiKey as string,
+						Accept: 'application/json',
+					},
+					qs: {
+						maxPageSize: parseInt(maxPageSize, 10),
+					},
+					json: true,
+				});
+
+				const joinRequests = (response.groupJoinRequests || []) as IDataObject[];
+
+				if (!joinRequests || joinRequests.length === 0) {
+					return null;
+				}
+
+				const newRequests = joinRequests.filter((request) => {
+					const requestPath = request.path as string;
+					return !seenRequestIds.includes(requestPath);
+				});
+
+				// First poll - return latest and initialize tracking
+				if (seenRequestIds.length === 0 && joinRequests.length > 0) {
+					webhookData.seenRequestIds = joinRequests.map((r) => r.path as string);
+					const returnData: INodeExecutionData[] = [{ json: joinRequests[0] }];
+					return [returnData];
+				}
+
+				if (newRequests.length === 0) {
+					return null;
+				}
+
+				const newIds = newRequests.map((r) => r.path as string);
+				webhookData.seenRequestIds = [...seenRequestIds, ...newIds];
+
+				// Keep only the last 100 IDs
+				if ((webhookData.seenRequestIds as string[]).length > 100) {
+					webhookData.seenRequestIds = (webhookData.seenRequestIds as string[]).slice(-100);
+				}
+
+				const returnData: INodeExecutionData[] = newRequests.map((request) => ({
+					json: request,
+				}));
+
+				return [returnData];
+			} catch (error) {
+				throw new NodeApiError(this.getNode(), error as JsonObject);
 			}
-
-			// Update last created timestamp to the newest entry
-			webhookData.lastCreated = auditLogs[0].created as string;
-
-			// Return new entries as trigger output
-			const returnData: INodeExecutionData[] = newEntries.map((entry) => ({
-				json: entry,
-			}));
-
-			return [returnData];
-		} catch (error) {
-			throw new NodeApiError(this.getNode(), error as JsonObject);
 		}
+
+		return null;
 	}
 }

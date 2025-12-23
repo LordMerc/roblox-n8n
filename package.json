@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-roblox",
-	"version": "2.4.14",
+	"version": "2.4.15",
 	"description": "A n8n community node for the Roblox API",
 	"keywords": [
 		"n8n-community-node-package"
@@ -40,8 +40,7 @@
 		"nodes": [
 			"dist/nodes/Roblox/RobloxCloud.node.js",
 			"dist/nodes/Roblox/RobloxLegacy.node.js",
-			"dist/nodes/Roblox/RobloxCloudTrigger.node.js",
-			"dist/nodes/Roblox/RobloxCloudJoinRequestTrigger.node.js"
+			"dist/nodes/Roblox/RobloxCloudTrigger.node.js"
 		]
 	},
 	"devDependencies": {
