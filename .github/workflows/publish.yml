@@ -3,17 +3,13 @@ name: Publish to npm
 on:
   release:
     types: [published]
-  # Or use 'push' to main if you publish on merge
-  # push:
-  #   branches:
-  #     - main
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write # <--- CRITICAL: Required for OIDC authentication
+      id-token: write # CRITICAL: Allows the OIDC handshake
 
     steps:
       - uses: actions/checkout@v4
@@ -21,13 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          registry-url: 'https://registry.npmjs.org'
-          # No 'token' input needed here for OIDC!
+          registry-url: 'https://registry.npmjs.org' # CRITICAL: Configures npm to use the registry
 
       - run: npm ci
 
+      # Note: No "env" block is needed here for Trusted Publishing
       - run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN:
-            ${{ secrets.NPM_TOKEN }} # OPTIONAL: Only needed if you have *private* dependencies to install.
-            # For the actual publishing auth, OIDC takes over automatically.
