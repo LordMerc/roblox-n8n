@@ -60,14 +60,14 @@ const ACTION_TYPE_OPTIONS = [
 
 export class RobloxGroupAuditLogTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Roblox Cloud Trigger',
-		name: 'robloxCloudTrigger',
+		displayName: 'Roblox Group Audit Log Trigger',
+		name: 'robloxGroupAuditLogTrigger',
 		icon: 'file:roblox.svg',
 		group: ['trigger'],
 		version: 1,
 		description: 'Triggers when new entries appear in a Roblox Group audit log',
 		defaults: {
-			name: 'Roblox Cloud Trigger',
+			name: 'Roblox Group Audit Log Trigger',
 		},
 		polling: true,
 		inputs: [],
