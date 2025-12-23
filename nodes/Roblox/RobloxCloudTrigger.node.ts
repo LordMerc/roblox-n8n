@@ -58,16 +58,16 @@ const ACTION_TYPE_OPTIONS = [
 	{ name: 'Update Roleset Data', value: '46' },
 ];
 
-export class RobloxGroupAuditLogTrigger implements INodeType {
+export class RobloxCloudTrigger implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Roblox Group Audit Log Trigger',
-		name: 'robloxGroupAuditLogTrigger',
+		displayName: 'Roblox Cloud Trigger',
+		name: 'robloxCloudTrigger',
 		icon: 'file:roblox.svg',
 		group: ['trigger'],
 		version: 1,
 		description: 'Triggers when new entries appear in a Roblox Group audit log',
 		defaults: {
-			name: 'Roblox Group Audit Log Trigger',
+			name: 'Roblox Cloud Trigger',
 		},
 		polling: true,
 		inputs: [],
