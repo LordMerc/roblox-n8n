@@ -28,6 +28,22 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Ban User',
+				value: 'ban_user',
+				description: 'Ban a user from the group',
+				action: 'Ban user from group',
+				routing: {
+					request: {
+						method: 'POST',
+						baseURL: 'https://groups.roblox.com',
+						url: '=/v1/groups/{{ $parameter["groupId"] }}/bans/{{ $parameter["userId"] }}',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+					},
+				},
+			},
+			{
 				name: 'Decline Group Join Request',
 				value: 'decline_join_request',
 				description: 'Decline a group join request',
@@ -138,6 +154,22 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Unban User',
+				value: 'unban_user',
+				description: 'Unban a user from the group',
+				action: 'Unban user from group',
+				routing: {
+					request: {
+						method: 'DELETE',
+						baseURL: 'https://groups.roblox.com',
+						url: '=/v1/groups/{{ $parameter["groupId"] }}/bans/{{ $parameter["userId"] }}',
+						headers: {
+							'x-api-key': '={{ $credentials.apiKey }}',
+						},
+					},
+				},
+			},
+			{
 				name: 'Update Group Shout',
 				value: 'update_group_shout',
 				description: 'Update a group shout',
@@ -201,6 +233,8 @@ export const groupFields: INodeProperties[] = [
 					'get_join_requests',
 					'accept_join_request',
 					'decline_join_request',
+					'ban_user',
+					'unban_user',
 				],
 			},
 		},
@@ -229,7 +263,7 @@ export const groupFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['group'],
-				operation: ['update_member_role'],
+				operation: ['update_member_role', 'ban_user', 'unban_user'],
 			},
 		},
 	},
