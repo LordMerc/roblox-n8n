@@ -79,6 +79,22 @@ const routedUrlFromInputJson = new Tournament().execute(
 
 assert.equal(routedUrlFromInputJson, '/cloud/v2/users/35188269');
 
+const routedUrlFromToolQuery = new Tournament().execute(
+	getUserOperation.routing.request.url.slice(1),
+	{
+		$parameter: {
+			userId: '',
+		},
+		$json: {
+			query: {
+				userId: '1',
+			},
+		},
+	},
+);
+
+assert.equal(routedUrlFromToolQuery, '/cloud/v2/users/1');
+
 const thumbnailUrlFromInputJson = new Tournament().execute(
 	thumbnailOperation.routing.request.url.slice(1),
 	{
@@ -92,6 +108,22 @@ const thumbnailUrlFromInputJson = new Tournament().execute(
 );
 
 assert.equal(thumbnailUrlFromInputJson, '/cloud/v2/users/35188269:generateThumbnail');
+
+const thumbnailUrlFromToolQuery = new Tournament().execute(
+	thumbnailOperation.routing.request.url.slice(1),
+	{
+		$parameter: {
+			userId: '',
+		},
+		$json: {
+			query: {
+				userId: '1',
+			},
+		},
+	},
+);
+
+assert.equal(thumbnailUrlFromToolQuery, '/cloud/v2/users/1:generateThumbnail');
 
 const composedGetUserRequest = {
 	...node.description.requestDefaults,
