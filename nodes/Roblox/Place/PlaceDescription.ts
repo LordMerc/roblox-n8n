@@ -20,9 +20,6 @@ export const placeOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/places/{{ $parameter["placeId"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -39,9 +36,6 @@ export const placeOperations: INodeProperties[] = [
 							updateMask: '={{ Object.keys($parameter["place_update_mask"] || {}).join(",") }}',
 						},
 						body: '={{ $parameter["place_update_mask"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},

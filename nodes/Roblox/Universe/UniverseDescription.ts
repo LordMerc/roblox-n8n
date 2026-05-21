@@ -21,9 +21,6 @@ export const universeOperations: INodeProperties[] = [
 					request: {
 						method: 'POST',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}:generateSpeechAsset',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 						body: {
 							text: '={{ $parameter["speechText"] }}',
 							speechStyle: `={{ Object.fromEntries(
@@ -43,9 +40,6 @@ export const universeOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -58,9 +52,6 @@ export const universeOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions/{{ $parameter["userId"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -73,9 +64,6 @@ export const universeOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -91,9 +79,6 @@ export const universeOperations: INodeProperties[] = [
 						qs: {
 							maxPageSize: '={{ $parameter["maxPageSize"] || 100 }}',
 							pageToken: '={{ $parameter["pageToken"] || "" }}',
-						},
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
 						},
 					},
 				},
@@ -111,9 +96,6 @@ export const universeOperations: INodeProperties[] = [
 							topic: '={{ $parameter["topic"] }}',
 							message: '={{ $parameter["message"] }}',
 						},
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -127,9 +109,6 @@ export const universeOperations: INodeProperties[] = [
 						method: 'POST',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}:restartServers',
 						body: {},
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -163,7 +142,6 @@ export const universeOperations: INodeProperties[] = [
 						},
 
 						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
 							'Content-Type': 'application/json',
 						},
 					},

@@ -21,9 +21,6 @@ export const engineOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/assets/v1/{{ $parameter["operationPath"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},

@@ -21,9 +21,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'POST',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/join-requests/{{ $parameter["joinRequestId"] }}:accept',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -37,9 +34,6 @@ export const groupOperations: INodeProperties[] = [
 						method: 'POST',
 						baseURL: 'https://groups.roblox.com',
 						url: '=/v1/groups/{{ $parameter["groupId"] }}/bans/{{ $parameter["userId"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -52,9 +46,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'POST',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/join-requests/{{ $parameter["joinRequestId"] }}:decline',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -67,9 +58,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -82,9 +70,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/memberships',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 						qs: {
 							maxPageSize: '={{ $parameter["arguments_memberships"].maxPageSize }}',
 							pageToken: '={{ $parameter["arguments_memberships"].pageToken }}',
@@ -102,9 +87,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/roles/{{ $parameter["roleId"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -117,9 +99,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/roles',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -132,9 +111,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/shout',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -147,9 +123,6 @@ export const groupOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/join-requests',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -163,9 +136,6 @@ export const groupOperations: INodeProperties[] = [
 						method: 'DELETE',
 						baseURL: 'https://groups.roblox.com',
 						url: '=/v1/groups/{{ $parameter["groupId"] }}/bans/{{ $parameter["userId"] }}',
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
-						},
 					},
 				},
 			},
@@ -183,7 +153,6 @@ export const groupOperations: INodeProperties[] = [
 						},
 
 						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
 							'Content-Type': 'application/json',
 						},
 					},
@@ -200,9 +169,6 @@ export const groupOperations: INodeProperties[] = [
 						url: '=/cloud/v2/groups/{{ $parameter["groupId"] }}/memberships/{{ $parameter["userId"] }}',
 						body: {
 							role: '=groups/{{ $parameter["groupId"] }}/roles/{{ $parameter["roleId"] }}',
-						},
-						headers: {
-							'x-api-key': '={{ $credentials.apiKey }}',
 						},
 					},
 				},

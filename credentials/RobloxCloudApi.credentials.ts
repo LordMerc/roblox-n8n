@@ -1,4 +1,10 @@
-import { Icon, ICredentialType, INodeProperties } from 'n8n-workflow';
+import type {
+	IAuthenticateGeneric,
+	Icon,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from 'n8n-workflow';
 
 export class RobloxCloudApi implements ICredentialType {
 	name = 'robloxCloudApi';
@@ -25,6 +31,7 @@ export class RobloxCloudApi implements ICredentialType {
 			displayName: 'API Token',
 			name: 'apiKey',
 			type: 'string',
+			required: true,
 			typeOptions: {
 				password: true,
 			},
@@ -32,4 +39,20 @@ export class RobloxCloudApi implements ICredentialType {
 			description: 'Your Roblox Cloud API token. Obtain it from the Cloud dashboard.',
 		},
 	];
+
+	authenticate: IAuthenticateGeneric = {
+		type: 'generic',
+		properties: {
+			headers: {
+				'x-api-key': '={{$credentials.apiKey}}',
+			},
+		},
+	};
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: 'https://apis.roblox.com',
+			url: '/cloud/v2/users/1',
+		},
+	};
 }

@@ -24,7 +24,6 @@ export class RobloxCloud implements INodeType {
 			baseURL: 'https://apis.roblox.com',
 			headers: {
 				'Content-Type': 'application/json',
-				'x-api-key': '={{ $credentials.apiKey }}',
 				Accept: 'application/json',
 			},
 		},
