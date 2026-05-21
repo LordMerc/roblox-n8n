@@ -50,6 +50,13 @@ const getUserOperation = userOperationParameter.options.find(
 assert.ok(getUserOperation, 'Get User operation should exist');
 assert.equal(getUserOperation.routing.request.method, 'GET');
 
+const thumbnailOperation = userOperationParameter.options.find(
+	(operation) => operation.value === 'generate_thumbnail',
+);
+
+assert.ok(thumbnailOperation, 'Generate User Thumbnail operation should exist');
+assert.equal(thumbnailOperation.routing.request.method, 'GET');
+
 const routedUrl = new Tournament().execute(getUserOperation.routing.request.url.slice(1), {
 	$parameter: {
 		userId: '123',
@@ -57,6 +64,34 @@ const routedUrl = new Tournament().execute(getUserOperation.routing.request.url.
 });
 
 assert.equal(routedUrl, '/cloud/v2/users/123');
+
+const routedUrlFromInputJson = new Tournament().execute(
+	getUserOperation.routing.request.url.slice(1),
+	{
+		$parameter: {
+			userId: '',
+		},
+		$json: {
+			userId: '35188269',
+		},
+	},
+);
+
+assert.equal(routedUrlFromInputJson, '/cloud/v2/users/35188269');
+
+const thumbnailUrlFromInputJson = new Tournament().execute(
+	thumbnailOperation.routing.request.url.slice(1),
+	{
+		$parameter: {
+			userId: '',
+		},
+		$json: {
+			userId: '35188269',
+		},
+	},
+);
+
+assert.equal(thumbnailUrlFromInputJson, '/cloud/v2/users/35188269:generateThumbnail');
 
 const composedGetUserRequest = {
 	...node.description.requestDefaults,

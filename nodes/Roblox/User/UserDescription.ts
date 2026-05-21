@@ -20,7 +20,7 @@ export const userOperations: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/users/{{ $parameter["userId"] }}',
+						url: '=/cloud/v2/users/{{ $parameter["userId"] || $json?.userId }}',
 					},
 				},
 			},
@@ -32,7 +32,7 @@ export const userOperations: INodeProperties[] = [
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/users/{{ $parameter["userId"] }}:generateThumbnail',
+						url: '=/cloud/v2/users/{{ $parameter["userId"] || $json?.userId }}:generateThumbnail',
 						qs: {
 							size: '={{ $parameter["arguments_thumbnail_generation"].size }}',
 							format: '={{ $parameter["arguments_thumbnail_generation"].format }}',
