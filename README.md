@@ -11,12 +11,22 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
 - Modular support for Roblox API endpoints
 - Example nodes for querying and automating Roblox experiences
 - Configs Open Cloud support for reading, staging, publishing, and restoring experience configs
+- User subscription lookup support for subscription products
+- Team Create Open Cloud support for settings, active sessions, team test shutdowns, and membership removal
 
 > ✅ Ideal for developers using Roblox + automation tools like n8n to build dashboards, pipelines, and custom tools.
 
 ## Configs API Scopes
 
 The Config resource uses the existing Roblox Cloud API key credential. Published config, full config, draft, and revision reads require the `universe:read` scope. Draft changes, draft reset, publish, and revision restore require the `universe:write` scope.
+
+## User Subscription API Scopes
+
+The Get Subscription user operation requires either `universe:write` or `universe.subscription-product.subscription:read`.
+
+## Team Create API Scopes
+
+The Team Create resource uses the existing Roblox Cloud API key credential and requires the `legacy-team-collaboration:manage` scope.
 
 ## Prerequisites
 
