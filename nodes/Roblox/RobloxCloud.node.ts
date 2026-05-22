@@ -5,6 +5,7 @@ import { userOperations, userFields } from './User/UserDescription';
 import { universeOperations, universeFields } from './Universe/UniverseDescription';
 import { placeOperations, placeFields } from './Place/PlaceDescription';
 import { engineOperations, engineFields } from './Engine/EngineDescription';
+import { configOperations, configFields } from './Config/ConfigDescription';
 export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Cloud',
@@ -41,6 +42,10 @@ export class RobloxCloud implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Config',
+						value: 'config',
+					},
+					{
 						name: 'Engine',
 						value: 'engine',
 					},
@@ -63,6 +68,9 @@ export class RobloxCloud implements INodeType {
 				],
 				default: 'group',
 			},
+			...configOperations,
+			...configFields,
+
 			...engineOperations,
 			...engineFields,
 
