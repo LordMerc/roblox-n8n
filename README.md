@@ -14,6 +14,7 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
 - User subscription lookup support for subscription products
 - Team Create Open Cloud support for settings, active sessions, team test shutdowns, and membership removal
 - Storage Open Cloud support for data stores, memory store queues, memory store sorted maps, memory store flush operations, and ordered data stores
+- Luau Execution Open Cloud support for creating tasks, polling task state, reading logs, and creating binary inputs
 
 > ✅ Ideal for developers using Roblox + automation tools like n8n to build dashboards, pipelines, and custom tools.
 
@@ -23,6 +24,7 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
   - `Config`: operations `get_config_values`, `get_config_full`, `get_config_draft`, `update_config_draft`, `reset_config_draft`, `overwrite_config_draft`, `publish_config_draft`, `list_config_revisions`, `restore_config_revision`. Arguments: `universeId`, `repository`, `entriesJson`, `previousDraftHash`, `draftHash`, `publishMessage`, `deploymentStrategy`, `revisionId`, `config_revision_filters` (`endTime`, `maxPageSize`, `searchKey`, `skip`, `sortKey`, `sortOrder`, `startTime`).
   - `Engine`: operation `get_operation`. Arguments: `operationPath`.
   - `Group`: operations `accept_join_request`, `ban_user`, `decline_join_request`, `get_group`, `get_memberships`, `get_role`, `get_roles`, `get_shout`, `get_join_requests`, `unban_user`, `update_group_shout`, `update_member_role`. Arguments: `groupId`, `joinRequestId`, `userId`, `message`, `roleId`, `arguments_memberships` (`maxPageSize`, `pageToken`, `filter`).
+  - `Luau Execution`: operations `create_session_task_binary_input`, `create_session_task`, `create_session_task_for_version`, `get_session_task`, `list_session_task_logs`. Arguments: `universeId`, `placeId`, `versionId`, `luauExecutionSessionId`, `taskId`, `binaryInputSize`, `script`, `timeout`, `binaryInput`, `enableBinaryOutput`, `luauExecutionTaskView`, `luau_execution_task_logs_query` (`maxPageSize`, `pageToken`, `view`).
   - `Place`: operations `get_place`, `update_place`. Arguments: `universeId`, `placeId`, `place_update_mask` (`displayName`, `description`, `serverSize`).
   - `Storage`: operations include data store control (`list_data_stores`, `delete_data_store`, `undelete_data_store`, `snapshot_data_stores`), data store entries and scoped entries (`list`, `get`, `create`, `update`, `delete`, `increment`, `list revisions`), memory store queues (`create`, `read`, `discard`), memory store sorted maps (`list`, `get`, `create`, `update`, `delete`), memory store flush (`flush_memory_store`, `get_memory_store_flush_operation`), and ordered data store entries (`list`, `get`, `create`, `update`, `delete`, `increment`). Arguments: `universeId`, `dataStoreId`, `scopeId`, `entryId`, `queueId`, `sortedMapId`, `itemId`, `orderedDataStoreId`, `operationId`, `dataStoreEntryJson`, `incrementDataStoreEntryJson`, `memoryStoreQueueItemJson`, `discardMemoryStoreQueueItemsJson`, `memoryStoreSortedMapItemJson`, `orderedDataStoreEntryJson`, `incrementOrderedDataStoreEntryJson`, query/update collections for list, create, read, and update operations (`filter`, `maxPageSize`, `pageToken`, `showDeleted`, `id`, `allowMissing`, `allOrNothing`, `count`, `invisibilityWindow`, `orderBy`).
   - `Team Create`: operations `close_team_test_session`, `get_active_session_members`, `get_many_team_create_settings`, `get_team_create_settings`, `remove_team_create_membership`, `update_team_create_settings`. Arguments: `placeId`, `gameId`, `team_create_pagination` (`cursor`, `limit`), `universeId`, `isEnabled`, `userId`, `universeIds`.
@@ -49,6 +51,10 @@ The Team Create resource uses the existing Roblox Cloud API key credential and r
 ## Storage API Scopes
 
 The Storage resource uses the existing Roblox Cloud API key credential. Standard data store control operations use `universe-datastores.control:list`, `universe-datastores.control:delete`, and `universe-datastores.control:snapshot`. Standard entry operations use `universe-datastores.objects:list`, `universe-datastores.objects:read`, `universe-datastores.objects:create`, `universe-datastores.objects:update`, `universe-datastores.objects:delete`, and `universe-datastores.versions:list`. Memory store queues use `memory-store.queue:add`, `memory-store.queue:dequeue`, and `memory-store.queue:discard`; memory store sorted maps use `memory-store.sorted-map:read` and `memory-store.sorted-map:write`; memory store flush uses `memory-store:flush`. Ordered data store reads require `universe.ordered-data-store.scope.entry:read`; ordered data store writes require `universe.ordered-data-store.scope.entry:write`.
+
+## Luau Execution API Scopes
+
+The Luau Execution resource uses the existing Roblox Cloud API key credential. Creating session tasks and binary inputs requires `universe.place.luau-execution-session:write`. Reading session tasks and logs requires `universe.place.luau-execution-session:read`; Roblox also allows those reads with `universe.place.luau-execution-session:write`.
 
 ## Prerequisites
 

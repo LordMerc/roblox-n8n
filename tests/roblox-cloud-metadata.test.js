@@ -96,6 +96,12 @@ const storageResource = resourceParameter.options.find((resource) => resource.va
 
 assert.ok(storageResource, 'Storage resource should exist');
 
+const luauExecutionResource = resourceParameter.options.find(
+	(resource) => resource.value === 'luauExecution',
+);
+
+assert.ok(luauExecutionResource, 'Luau Execution resource should exist');
+
 const configOperationParameter = node.description.properties.find(
 	(parameter) =>
 		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('config'),
@@ -245,6 +251,63 @@ for (const [operationValue, method] of Object.entries(expectedStorageOperationMe
 	);
 	assert.equal(storageOperationsByValue[operationValue].routing.request.method, method);
 }
+
+const luauExecutionOperationParameter = node.description.properties.find(
+	(parameter) =>
+		parameter.name === 'operation' &&
+		parameter.displayOptions?.show?.resource?.includes('luauExecution'),
+);
+
+assert.ok(luauExecutionOperationParameter, 'Luau Execution operation parameter should exist');
+
+const expectedLuauExecutionOperationMethods = {
+	create_session_task_binary_input: 'POST',
+	create_session_task: 'POST',
+	create_session_task_for_version: 'POST',
+	get_session_task: 'GET',
+	list_session_task_logs: 'GET',
+};
+
+const luauExecutionOperationsByValue = Object.fromEntries(
+	luauExecutionOperationParameter.options.map((operation) => [operation.value, operation]),
+);
+
+for (const [operationValue, method] of Object.entries(expectedLuauExecutionOperationMethods)) {
+	assert.ok(
+		luauExecutionOperationsByValue[operationValue],
+		`Luau Execution operation ${operationValue} should exist`,
+	);
+	assert.equal(luauExecutionOperationsByValue[operationValue].routing.request.method, method);
+}
+
+const luauExecutionTaskViewParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'luauExecutionTaskView',
+);
+
+assert.ok(luauExecutionTaskViewParameter, 'Luau Execution task view parameter should exist');
+assert.deepEqual(
+	luauExecutionTaskViewParameter.options.map((option) => option.value),
+	['VIEW_UNSPECIFIED', 'BASIC', 'FULL'],
+);
+
+const luauExecutionTaskLogsQueryParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'luau_execution_task_logs_query',
+);
+
+assert.ok(
+	luauExecutionTaskLogsQueryParameter,
+	'Luau Execution task logs query parameter should exist',
+);
+
+const luauExecutionTaskLogsViewField = luauExecutionTaskLogsQueryParameter.options.find(
+	(option) => option.name === 'view',
+);
+
+assert.ok(luauExecutionTaskLogsViewField, 'Luau Execution task logs view field should exist');
+assert.deepEqual(
+	luauExecutionTaskLogsViewField.options.map((option) => option.value),
+	['VIEW_UNSPECIFIED', 'FLAT', 'STRUCTURED'],
+);
 
 const routedUrl = new Tournament().execute(getUserOperation.routing.request.url.slice(1), {
 	$parameter: {
@@ -646,6 +709,118 @@ assert.equal(
 	'={{ JSON.parse($parameter["incrementOrderedDataStoreEntryJson"] || "{}") }}',
 );
 
+const createSessionTaskBinaryInputUrl = new Tournament().execute(
+	luauExecutionOperationsByValue.create_session_task_binary_input.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+		},
+	},
+);
+
+assert.equal(
+	createSessionTaskBinaryInputUrl,
+	'/cloud/v2/universes/123456/luau-execution-session-task-binary-inputs',
+);
+assert.deepEqual(luauExecutionOperationsByValue.create_session_task_binary_input.routing.request.body, {
+	size: '={{ $parameter["binaryInputSize"] }}',
+});
+
+const createSessionTaskUrl = new Tournament().execute(
+	luauExecutionOperationsByValue.create_session_task.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			placeId: '98765',
+		},
+	},
+);
+
+assert.equal(
+	createSessionTaskUrl,
+	'/cloud/v2/universes/123456/places/98765/luau-execution-session-tasks',
+);
+
+const createSessionTaskBody = luauExecutionOperationsByValue.create_session_task.routing.request.body;
+
+assert.equal(typeof createSessionTaskBody, 'string');
+assert.ok(
+	createSessionTaskBody.includes('script: $parameter["script"]'),
+	'Create session task body should map script',
+);
+assert.ok(
+	createSessionTaskBody.includes('enableBinaryOutput: $parameter["enableBinaryOutput"]'),
+	'Create session task body should map enableBinaryOutput',
+);
+assert.ok(
+	createSessionTaskBody.includes('timeout: $parameter["timeout"]'),
+	'Create session task body should map timeout when provided',
+);
+assert.ok(
+	createSessionTaskBody.includes('binaryInput: $parameter["binaryInput"]'),
+	'Create session task body should map binaryInput when provided',
+);
+
+const createSessionTaskForVersionUrl = new Tournament().execute(
+	luauExecutionOperationsByValue.create_session_task_for_version.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			placeId: '98765',
+			versionId: '42',
+		},
+	},
+);
+
+assert.equal(
+	createSessionTaskForVersionUrl,
+	'/cloud/v2/universes/123456/places/98765/versions/42/luau-execution-session-tasks',
+);
+
+const getSessionTaskUrl = new Tournament().execute(
+	luauExecutionOperationsByValue.get_session_task.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			placeId: '98765',
+			versionId: '42',
+			luauExecutionSessionId: 'session-1',
+			taskId: 'task-1',
+		},
+	},
+);
+
+assert.equal(
+	getSessionTaskUrl,
+	'/cloud/v2/universes/123456/places/98765/versions/42/luau-execution-sessions/session-1/tasks/task-1',
+);
+assert.deepEqual(luauExecutionOperationsByValue.get_session_task.routing.request.qs, {
+	view: '={{ $parameter["luauExecutionTaskView"] }}',
+});
+
+const listSessionTaskLogsUrl = new Tournament().execute(
+	luauExecutionOperationsByValue.list_session_task_logs.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			placeId: '98765',
+			versionId: '42',
+			luauExecutionSessionId: 'session-1',
+			taskId: 'task-1',
+		},
+	},
+);
+
+assert.equal(
+	listSessionTaskLogsUrl,
+	'/cloud/v2/universes/123456/places/98765/versions/42/luau-execution-sessions/session-1/tasks/task-1/logs',
+);
+assert.deepEqual(luauExecutionOperationsByValue.list_session_task_logs.routing.request.qs, {
+	maxPageSize: '={{ $parameter["luau_execution_task_logs_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["luau_execution_task_logs_query"].pageToken }}',
+	view: '={{ $parameter["luau_execution_task_logs_query"].view }}',
+});
+
 const composedGetUserRequest = {
 	...node.description.requestDefaults,
 	...getUserOperation.routing.request,
@@ -701,3 +876,20 @@ const composedListDataStoresRequest = {
 assert.equal(composedListDataStoresRequest.baseURL, 'https://apis.roblox.com');
 assert.equal(composedListDataStoresRequest.headers['x-api-key'], '={{$credentials.apiKey}}');
 assert.equal(composedListDataStoresRequest.headers.Accept, 'application/json');
+
+const composedListSessionTaskLogsRequest = {
+	...node.description.requestDefaults,
+	...luauExecutionOperationsByValue.list_session_task_logs.routing.request,
+	headers: {
+		...node.description.requestDefaults.headers,
+		...luauExecutionOperationsByValue.list_session_task_logs.routing.request.headers,
+		...credentials.authenticate.properties.headers,
+	},
+};
+
+assert.equal(composedListSessionTaskLogsRequest.baseURL, 'https://apis.roblox.com');
+assert.equal(
+	composedListSessionTaskLogsRequest.headers['x-api-key'],
+	'={{$credentials.apiKey}}',
+);
+assert.equal(composedListSessionTaskLogsRequest.headers.Accept, 'application/json');
