@@ -7,6 +7,7 @@ import { placeOperations, placeFields } from './Place/PlaceDescription';
 import { engineOperations, engineFields } from './Engine/EngineDescription';
 import { configOperations, configFields } from './Config/ConfigDescription';
 import { teamCreateOperations, teamCreateFields } from './TeamCreate/TeamCreateDescription';
+import { storageOperations, storageFields } from './Storage/StorageDescription';
 export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Cloud',
@@ -59,6 +60,10 @@ export class RobloxCloud implements INodeType {
 						value: 'place',
 					},
 					{
+						name: 'Storage',
+						value: 'storage',
+					},
+					{
 						name: 'Team Create',
 						value: 'teamCreate',
 					},
@@ -78,6 +83,9 @@ export class RobloxCloud implements INodeType {
 
 			...teamCreateOperations,
 			...teamCreateFields,
+
+			...storageOperations,
+			...storageFields,
 
 			...engineOperations,
 			...engineFields,

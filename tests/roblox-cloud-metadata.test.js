@@ -37,8 +37,7 @@ const node = new RobloxCloud();
 
 const userOperationParameter = node.description.properties.find(
 	(parameter) =>
-		parameter.name === 'operation' &&
-		parameter.displayOptions?.show?.resource?.includes('user'),
+		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('user'),
 );
 
 assert.ok(userOperationParameter, 'User operation parameter should exist');
@@ -64,7 +63,9 @@ const getSubscriptionOperation = userOperationParameter.options.find(
 assert.ok(getSubscriptionOperation, 'Get Subscription operation should exist');
 assert.equal(getSubscriptionOperation.routing.request.method, 'GET');
 
-const resourceParameter = node.description.properties.find((parameter) => parameter.name === 'resource');
+const resourceParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'resource',
+);
 
 assert.ok(resourceParameter, 'Resource parameter should exist');
 
@@ -78,10 +79,13 @@ const teamCreateResource = resourceParameter.options.find(
 
 assert.ok(teamCreateResource, 'Team Create resource should exist');
 
+const storageResource = resourceParameter.options.find((resource) => resource.value === 'storage');
+
+assert.ok(storageResource, 'Storage resource should exist');
+
 const configOperationParameter = node.description.properties.find(
 	(parameter) =>
-		parameter.name === 'operation' &&
-		parameter.displayOptions?.show?.resource?.includes('config'),
+		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('config'),
 );
 
 assert.ok(configOperationParameter, 'Config operation parameter should exist');
@@ -172,6 +176,62 @@ assert.equal(getTeamCreateSettingsOperation.routing.request.method, 'GET');
 assert.equal(updateTeamCreateSettingsOperation.routing.request.method, 'PATCH');
 assert.equal(removeTeamCreateMembershipOperation.routing.request.method, 'DELETE');
 assert.equal(getManyTeamCreateSettingsOperation.routing.request.method, 'GET');
+
+const storageOperationParameter = node.description.properties.find(
+	(parameter) =>
+		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('storage'),
+);
+
+assert.ok(storageOperationParameter, 'Storage operation parameter should exist');
+
+const expectedStorageOperationMethods = {
+	list_data_stores: 'GET',
+	delete_data_store: 'DELETE',
+	undelete_data_store: 'POST',
+	snapshot_data_stores: 'POST',
+	list_data_store_entries: 'GET',
+	create_data_store_entry: 'POST',
+	get_data_store_entry: 'GET',
+	update_data_store_entry: 'PATCH',
+	delete_data_store_entry: 'DELETE',
+	increment_data_store_entry: 'POST',
+	list_data_store_entry_revisions: 'GET',
+	list_scoped_data_store_entries: 'GET',
+	create_scoped_data_store_entry: 'POST',
+	get_scoped_data_store_entry: 'GET',
+	update_scoped_data_store_entry: 'PATCH',
+	delete_scoped_data_store_entry: 'DELETE',
+	increment_scoped_data_store_entry: 'POST',
+	list_scoped_data_store_entry_revisions: 'GET',
+	create_memory_store_queue_item: 'POST',
+	read_memory_store_queue_items: 'GET',
+	discard_memory_store_queue_items: 'POST',
+	list_memory_store_sorted_map_items: 'GET',
+	create_memory_store_sorted_map_item: 'POST',
+	get_memory_store_sorted_map_item: 'GET',
+	update_memory_store_sorted_map_item: 'PATCH',
+	delete_memory_store_sorted_map_item: 'DELETE',
+	flush_memory_store: 'POST',
+	get_memory_store_flush_operation: 'GET',
+	list_ordered_data_store_entries: 'GET',
+	create_ordered_data_store_entry: 'POST',
+	get_ordered_data_store_entry: 'GET',
+	update_ordered_data_store_entry: 'PATCH',
+	delete_ordered_data_store_entry: 'DELETE',
+	increment_ordered_data_store_entry: 'POST',
+};
+
+const storageOperationsByValue = Object.fromEntries(
+	storageOperationParameter.options.map((operation) => [operation.value, operation]),
+);
+
+for (const [operationValue, method] of Object.entries(expectedStorageOperationMethods)) {
+	assert.ok(
+		storageOperationsByValue[operationValue],
+		`Storage operation ${operationValue} should exist`,
+	);
+	assert.equal(storageOperationsByValue[operationValue].routing.request.method, method);
+}
 
 const routedUrl = new Tournament().execute(getUserOperation.routing.request.url.slice(1), {
 	$parameter: {
@@ -329,7 +389,10 @@ const closeTeamTestSessionUrl = new Tournament().execute(
 );
 
 assert.equal(closeTeamTestSessionUrl, '/legacy-develop/v2/teamtest/12345');
-assert.equal(closeTeamTestSessionOperation.routing.request.qs.gameId, '={{ $parameter["gameId"] }}');
+assert.equal(
+	closeTeamTestSessionOperation.routing.request.qs.gameId,
+	'={{ $parameter["gameId"] }}',
+);
 
 const activeSessionMembersUrl = new Tournament().execute(
 	getActiveSessionMembersOperation.routing.request.url.slice(1),
@@ -403,6 +466,173 @@ assert.equal(
 	getManyTeamCreateSettingsOperation.routing.request.qs.ids,
 	'={{ $parameter["universeIds"].split(",").map(id => id.trim()).filter(Boolean) }}',
 );
+
+const listDataStoresUrl = new Tournament().execute(
+	storageOperationsByValue.list_data_stores.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+		},
+	},
+);
+
+assert.equal(listDataStoresUrl, '/cloud/v2/universes/123456/data-stores');
+assert.deepEqual(storageOperationsByValue.list_data_stores.routing.request.qs, {
+	maxPageSize: '={{ $parameter["data_store_list_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["data_store_list_query"].pageToken }}',
+	filter: '={{ $parameter["data_store_list_query"].filter }}',
+	showDeleted: '={{ $parameter["data_store_list_query"].showDeleted }}',
+});
+
+const createDataStoreEntryUrl = new Tournament().execute(
+	storageOperationsByValue.create_data_store_entry.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			dataStoreId: 'PlayerData',
+		},
+	},
+);
+
+assert.equal(createDataStoreEntryUrl, '/cloud/v2/universes/123456/data-stores/PlayerData/entries');
+assert.deepEqual(storageOperationsByValue.create_data_store_entry.routing.request.qs, {
+	id: '={{ $parameter["data_store_create_query"].id }}',
+});
+assert.equal(
+	storageOperationsByValue.create_data_store_entry.routing.request.body,
+	'={{ JSON.parse($parameter["dataStoreEntryJson"] || "{}") }}',
+);
+
+const updateScopedDataStoreEntryUrl = new Tournament().execute(
+	storageOperationsByValue.update_scoped_data_store_entry.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			dataStoreId: 'PlayerData',
+			scopeId: 'global',
+			entryId: 'coins',
+		},
+	},
+);
+
+assert.equal(
+	updateScopedDataStoreEntryUrl,
+	'/cloud/v2/universes/123456/data-stores/PlayerData/scopes/global/entries/coins',
+);
+assert.deepEqual(storageOperationsByValue.update_scoped_data_store_entry.routing.request.qs, {
+	allowMissing: '={{ $parameter["data_store_update_query"].allowMissing }}',
+});
+
+const readQueueItemsUrl = new Tournament().execute(
+	storageOperationsByValue.read_memory_store_queue_items.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			queueId: 'matchmaking',
+		},
+	},
+);
+
+assert.equal(
+	readQueueItemsUrl,
+	'/cloud/v2/universes/123456/memory-store/queues/matchmaking/items:read',
+);
+assert.deepEqual(storageOperationsByValue.read_memory_store_queue_items.routing.request.qs, {
+	count: '={{ $parameter["memory_store_queue_read_query"].count }}',
+	allOrNothing: '={{ $parameter["memory_store_queue_read_query"].allOrNothing }}',
+	invisibilityWindow: '={{ $parameter["memory_store_queue_read_query"].invisibilityWindow }}',
+});
+
+const discardQueueItemsUrl = new Tournament().execute(
+	storageOperationsByValue.discard_memory_store_queue_items.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			queueId: 'matchmaking',
+		},
+	},
+);
+
+assert.equal(
+	discardQueueItemsUrl,
+	'/cloud/v2/universes/123456/memory-store/queues/matchmaking/items:discard',
+);
+assert.equal(
+	storageOperationsByValue.discard_memory_store_queue_items.routing.request.body,
+	'={{ JSON.parse($parameter["discardMemoryStoreQueueItemsJson"] || "{}") }}',
+);
+
+const updateSortedMapItemUrl = new Tournament().execute(
+	storageOperationsByValue.update_memory_store_sorted_map_item.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			sortedMapId: 'leaderboard',
+			itemId: 'player-1',
+		},
+	},
+);
+
+assert.equal(
+	updateSortedMapItemUrl,
+	'/cloud/v2/universes/123456/memory-store/sorted-maps/leaderboard/items/player-1',
+);
+assert.deepEqual(storageOperationsByValue.update_memory_store_sorted_map_item.routing.request.qs, {
+	allowMissing: '={{ $parameter["memory_store_sorted_map_update_query"].allowMissing }}',
+});
+assert.equal(
+	storageOperationsByValue.update_memory_store_sorted_map_item.routing.request.body,
+	'={{ JSON.parse($parameter["memoryStoreSortedMapItemJson"] || "{}") }}',
+);
+
+const flushMemoryStoreUrl = new Tournament().execute(
+	storageOperationsByValue.flush_memory_store.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+		},
+	},
+);
+
+assert.equal(flushMemoryStoreUrl, '/cloud/v2/universes/123456/memory-store:flush');
+assert.deepEqual(storageOperationsByValue.flush_memory_store.routing.request.body, {});
+
+const getMemoryStoreFlushOperationUrl = new Tournament().execute(
+	storageOperationsByValue.get_memory_store_flush_operation.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			operationId: 'flush-1',
+		},
+	},
+);
+
+assert.equal(
+	getMemoryStoreFlushOperationUrl,
+	'/cloud/v2/universes/123456/memory-store/operations/flush-1',
+);
+
+const incrementOrderedDataStoreEntryUrl = new Tournament().execute(
+	storageOperationsByValue.increment_ordered_data_store_entry.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			orderedDataStoreId: 'Wins',
+			scopeId: 'global',
+			entryId: 'player-1',
+		},
+	},
+);
+
+assert.equal(
+	incrementOrderedDataStoreEntryUrl,
+	'/cloud/v2/universes/123456/ordered-data-stores/Wins/scopes/global/entries/player-1:increment',
+);
+assert.equal(
+	storageOperationsByValue.increment_ordered_data_store_entry.routing.request.body,
+	'={{ JSON.parse($parameter["incrementOrderedDataStoreEntryJson"] || "{}") }}',
+);
+
 const composedGetUserRequest = {
 	...node.description.requestDefaults,
 	...getUserOperation.routing.request,
@@ -442,8 +672,19 @@ const composedGetTeamCreateSettingsRequest = {
 };
 
 assert.equal(composedGetTeamCreateSettingsRequest.baseURL, 'https://apis.roblox.com');
-assert.equal(
-	composedGetTeamCreateSettingsRequest.headers['x-api-key'],
-	'={{$credentials.apiKey}}',
-);
+assert.equal(composedGetTeamCreateSettingsRequest.headers['x-api-key'], '={{$credentials.apiKey}}');
 assert.equal(composedGetTeamCreateSettingsRequest.headers.Accept, 'application/json');
+
+const composedListDataStoresRequest = {
+	...node.description.requestDefaults,
+	...storageOperationsByValue.list_data_stores.routing.request,
+	headers: {
+		...node.description.requestDefaults.headers,
+		...storageOperationsByValue.list_data_stores.routing.request.headers,
+		...credentials.authenticate.properties.headers,
+	},
+};
+
+assert.equal(composedListDataStoresRequest.baseURL, 'https://apis.roblox.com');
+assert.equal(composedListDataStoresRequest.headers['x-api-key'], '={{$credentials.apiKey}}');
+assert.equal(composedListDataStoresRequest.headers.Accept, 'application/json');

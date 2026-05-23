@@ -13,6 +13,7 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
 - Configs Open Cloud support for reading, staging, publishing, and restoring experience configs
 - User subscription lookup support for subscription products
 - Team Create Open Cloud support for settings, active sessions, team test shutdowns, and membership removal
+- Storage Open Cloud support for data stores, memory store queues, memory store sorted maps, memory store flush operations, and ordered data stores
 
 > ✅ Ideal for developers using Roblox + automation tools like n8n to build dashboards, pipelines, and custom tools.
 
@@ -27,6 +28,10 @@ The Get Subscription user operation requires either `universe:write` or `univers
 ## Team Create API Scopes
 
 The Team Create resource uses the existing Roblox Cloud API key credential and requires the `legacy-team-collaboration:manage` scope.
+
+## Storage API Scopes
+
+The Storage resource uses the existing Roblox Cloud API key credential. Standard data store control operations use `universe-datastores.control:list`, `universe-datastores.control:delete`, and `universe-datastores.control:snapshot`. Standard entry operations use `universe-datastores.objects:list`, `universe-datastores.objects:read`, `universe-datastores.objects:create`, `universe-datastores.objects:update`, `universe-datastores.objects:delete`, and `universe-datastores.versions:list`. Memory store queues use `memory-store.queue:add`, `memory-store.queue:dequeue`, and `memory-store.queue:discard`; memory store sorted maps use `memory-store.sorted-map:read` and `memory-store.sorted-map:write`; memory store flush uses `memory-store:flush`. Ordered data store reads require `universe.ordered-data-store.scope.entry:read`; ordered data store writes require `universe.ordered-data-store.scope.entry:write`.
 
 ## Prerequisites
 
