@@ -21,6 +21,7 @@ require.extensions['.ts'] = (module, filename) => {
 const root = path.resolve(__dirname, '..');
 const { RobloxCloudApi } = require(path.join(root, 'credentials/RobloxCloudApi.credentials.ts'));
 const { RobloxCloud } = require(path.join(root, 'nodes/Roblox/RobloxCloud.node.ts'));
+const { RobloxLegacy } = require(path.join(root, 'nodes/Roblox/RobloxLegacy.node.ts'));
 
 const credentials = new RobloxCloudApi();
 
@@ -34,6 +35,18 @@ assert.deepEqual(credentials.authenticate, {
 });
 
 const node = new RobloxCloud();
+const legacyNode = new RobloxLegacy();
+
+assert.equal(
+	node.description.usableAsTool,
+	undefined,
+	'Roblox Cloud should not register a separate tool node',
+);
+assert.equal(
+	legacyNode.description.usableAsTool,
+	undefined,
+	'Roblox Legacy should not register a separate tool node',
+);
 
 const userOperationParameter = node.description.properties.find(
 	(parameter) =>

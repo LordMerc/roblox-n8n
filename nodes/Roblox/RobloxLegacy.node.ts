@@ -8,7 +8,6 @@ export class RobloxLegacy implements INodeType {
 		name: 'robloxLegacy',
 		icon: 'file:roblox.svg',
 		group: ['transform'],
-		usableAsTool: true,
 		version: 1.5,
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
 		description: 'Interact with Roblox Legacy API',
