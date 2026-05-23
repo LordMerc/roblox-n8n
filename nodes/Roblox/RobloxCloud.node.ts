@@ -14,6 +14,7 @@ export class RobloxCloud implements INodeType {
 		name: 'robloxCloud',
 		icon: 'file:roblox.svg',
 		group: ['transform'],
+		usableAsTool: true,
 		version: 1.5,
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
 		description: 'Interact with Roblox Cloud API',

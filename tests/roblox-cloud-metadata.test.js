@@ -39,13 +39,13 @@ const legacyNode = new RobloxLegacy();
 
 assert.equal(
 	node.description.usableAsTool,
-	undefined,
-	'Roblox Cloud should not register a separate tool node',
+	true,
+	'Roblox Cloud should register a separate tool node',
 );
 assert.equal(
 	legacyNode.description.usableAsTool,
-	undefined,
-	'Roblox Legacy should not register a separate tool node',
+	true,
+	'Roblox Legacy should register a separate tool node',
 );
 
 const userOperationParameter = node.description.properties.find(
