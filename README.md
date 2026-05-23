@@ -10,8 +10,45 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
 - Built-in authentication with Open Cloud API keys
 - Modular support for Roblox API endpoints
 - Example nodes for querying and automating Roblox experiences
+- Configs Open Cloud support for reading, staging, publishing, and restoring experience configs
+- User subscription lookup support for subscription products
+- Team Create Open Cloud support for settings, active sessions, team test shutdowns, and membership removal
+- Storage Open Cloud support for data stores, memory store queues, memory store sorted maps, memory store flush operations, and ordered data stores
 
 > ✅ Ideal for developers using Roblox + automation tools like n8n to build dashboards, pipelines, and custom tools.
+
+## Current Nodes and Arguments
+
+- `Roblox Cloud`
+  - `Config`: operations `get_config_values`, `get_config_full`, `get_config_draft`, `update_config_draft`, `reset_config_draft`, `overwrite_config_draft`, `publish_config_draft`, `list_config_revisions`, `restore_config_revision`. Arguments: `universeId`, `repository`, `entriesJson`, `previousDraftHash`, `draftHash`, `publishMessage`, `deploymentStrategy`, `revisionId`, `config_revision_filters` (`endTime`, `maxPageSize`, `searchKey`, `skip`, `sortKey`, `sortOrder`, `startTime`).
+  - `Engine`: operation `get_operation`. Arguments: `operationPath`.
+  - `Group`: operations `accept_join_request`, `ban_user`, `decline_join_request`, `get_group`, `get_memberships`, `get_role`, `get_roles`, `get_shout`, `get_join_requests`, `unban_user`, `update_group_shout`, `update_member_role`. Arguments: `groupId`, `joinRequestId`, `userId`, `message`, `roleId`, `arguments_memberships` (`maxPageSize`, `pageToken`, `filter`).
+  - `Place`: operations `get_place`, `update_place`. Arguments: `universeId`, `placeId`, `place_update_mask` (`displayName`, `description`, `serverSize`).
+  - `Storage`: operations include data store control (`list_data_stores`, `delete_data_store`, `undelete_data_store`, `snapshot_data_stores`), data store entries and scoped entries (`list`, `get`, `create`, `update`, `delete`, `increment`, `list revisions`), memory store queues (`create`, `read`, `discard`), memory store sorted maps (`list`, `get`, `create`, `update`, `delete`), memory store flush (`flush_memory_store`, `get_memory_store_flush_operation`), and ordered data store entries (`list`, `get`, `create`, `update`, `delete`, `increment`). Arguments: `universeId`, `dataStoreId`, `scopeId`, `entryId`, `queueId`, `sortedMapId`, `itemId`, `orderedDataStoreId`, `operationId`, `dataStoreEntryJson`, `incrementDataStoreEntryJson`, `memoryStoreQueueItemJson`, `discardMemoryStoreQueueItemsJson`, `memoryStoreSortedMapItemJson`, `orderedDataStoreEntryJson`, `incrementOrderedDataStoreEntryJson`, query/update collections for list, create, read, and update operations (`filter`, `maxPageSize`, `pageToken`, `showDeleted`, `id`, `allowMissing`, `allOrNothing`, `count`, `invisibilityWindow`, `orderBy`).
+  - `Team Create`: operations `close_team_test_session`, `get_active_session_members`, `get_many_team_create_settings`, `get_team_create_settings`, `remove_team_create_membership`, `update_team_create_settings`. Arguments: `placeId`, `gameId`, `team_create_pagination` (`cursor`, `limit`), `universeId`, `isEnabled`, `userId`, `universeIds`.
+  - `Universe`: operations `generate_speech_asset`, `get_universe`, `get_user_restriction_universe`, `get_user_restrictions_universe`, `list_user_restriction_logs`, `publish_universe_message`, `restart_universe_servers`, `update_user_restriction_universe`. Arguments: `universeId`, `topic`, `message`, `userId`, `arguments_list_user_restriction_logs` (`pageToken`, `maxPageSize`), `speechText`, `speechStyleFields` (`pitch`, `speed`, `voiceId`), `restriction_update_mask` (`active`, `displayReason`, `duration`, `excludeAltAccounts`, `privateReason`).
+  - `User`: operations `generate_thumbnail`, `get_subscription`, `get_user`. Arguments: `userId`, `universeId`, `subscriptionProductId`, `subscriptionId`, `view`, `arguments_thumbnail_generation` (`size`, `format`, `shape`).
+- `Roblox Legacy`
+  - `Legacy Place`: operations `get_favorites_count`, `get_universe_products`. Arguments: `universeId`, `universeIds`.
+  - `Legacy User`: operations `get_username_history`, `get_usernames_from_user_ids`. Arguments: `userId`, `arguments_username_history` (`limit`, `cursor`, `sortOrder`), `arguments_user_names_from_user_ids` (`userIds`, `excludeBannedUsers`).
+- `Roblox Cloud Trigger`
+  - Events: `Group Audit Log Entry`, `Group Join Request`. Arguments: `eventType`, `groupId`, audit-log filters `actionType`, `userId`, `limit`, and join-request page size `maxPageSize`.
+
+## Configs API Scopes
+
+The Config resource uses the existing Roblox Cloud API key credential. Published config, full config, draft, and revision reads require the `universe:read` scope. Draft changes, draft reset, publish, and revision restore require the `universe:write` scope.
+
+## User Subscription API Scopes
+
+The Get Subscription user operation requires either `universe:write` or `universe.subscription-product.subscription:read`.
+
+## Team Create API Scopes
+
+The Team Create resource uses the existing Roblox Cloud API key credential and requires the `legacy-team-collaboration:manage` scope.
+
+## Storage API Scopes
+
+The Storage resource uses the existing Roblox Cloud API key credential. Standard data store control operations use `universe-datastores.control:list`, `universe-datastores.control:delete`, and `universe-datastores.control:snapshot`. Standard entry operations use `universe-datastores.objects:list`, `universe-datastores.objects:read`, `universe-datastores.objects:create`, `universe-datastores.objects:update`, `universe-datastores.objects:delete`, and `universe-datastores.versions:list`. Memory store queues use `memory-store.queue:add`, `memory-store.queue:dequeue`, and `memory-store.queue:discard`; memory store sorted maps use `memory-store.sorted-map:read` and `memory-store.sorted-map:write`; memory store flush uses `memory-store:flush`. Ordered data store reads require `universe.ordered-data-store.scope.entry:read`; ordered data store writes require `universe.ordered-data-store.scope.entry:write`.
 
 ## Prerequisites
 

@@ -13,18 +13,6 @@ export const userOperations: INodeProperties[] = [
 		},
 		options: [
 			{
-				name: 'Get User',
-				value: 'get_user',
-				description: 'Retrieve a user',
-				action: 'Get user',
-				routing: {
-					request: {
-						method: 'GET',
-						url: '=/cloud/v2/users/{{ $parameter["userId"] || $json?.userId || $json?.query?.userId }}',
-					},
-				},
-			},
-			{
 				name: 'Generate User Thumbnail',
 				value: 'generate_thumbnail',
 				description: 'Generate a user thumbnail',
@@ -38,6 +26,33 @@ export const userOperations: INodeProperties[] = [
 							format: '={{ $parameter["arguments_thumbnail_generation"].format }}',
 							shape: '={{ $parameter["arguments_thumbnail_generation"].shape }}',
 						},
+					},
+				},
+			},
+			{
+				name: 'Get Subscription',
+				value: 'get_subscription',
+				description: 'Get a user subscription to a subscription product',
+				action: 'Get subscription',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/subscription-products/{{ $parameter["subscriptionProductId"] }}/subscriptions/{{ $parameter["subscriptionId"] }}',
+						qs: {
+							view: '={{ $parameter["view"] }}',
+						},
+					},
+				},
+			},
+			{
+				name: 'Get User',
+				value: 'get_user',
+				description: 'Retrieve a user',
+				action: 'Get user',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/users/{{ $parameter["userId"] || $json?.userId || $json?.query?.userId }}',
 					},
 				},
 			},
@@ -58,6 +73,75 @@ export const userFields: INodeProperties[] = [
 			show: {
 				resource: ['user'],
 				operation: ['get_user', 'generate_thumbnail'],
+			},
+		},
+	},
+	{
+		displayName: 'Universe ID',
+		name: 'universeId',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'The universe ID that owns the subscription product',
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['get_subscription'],
+			},
+		},
+	},
+	{
+		displayName: 'Subscription Product ID',
+		name: 'subscriptionProductId',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'The subscription-product ID',
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['get_subscription'],
+			},
+		},
+	},
+	{
+		displayName: 'Subscription ID',
+		name: 'subscriptionId',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'The subscription ID, which is the subscribed user ID',
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['get_subscription'],
+			},
+		},
+	},
+	{
+		displayName: 'View',
+		name: 'view',
+		type: 'options',
+		options: [
+			{
+				name: 'Basic',
+				value: 'BASIC',
+			},
+			{
+				name: 'Full',
+				value: 'FULL',
+			},
+			{
+				name: 'View Unspecified',
+				value: 'VIEW_UNSPECIFIED',
+			},
+		],
+		default: 'BASIC',
+		description: 'The view in which to retrieve the subscription',
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['get_subscription'],
 			},
 		},
 	},
