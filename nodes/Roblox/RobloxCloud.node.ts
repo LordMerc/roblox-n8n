@@ -8,6 +8,10 @@ import { engineOperations, engineFields } from './Engine/EngineDescription';
 import { configOperations, configFields } from './Config/ConfigDescription';
 import { teamCreateOperations, teamCreateFields } from './TeamCreate/TeamCreateDescription';
 import { storageOperations, storageFields } from './Storage/StorageDescription';
+import {
+	luauExecutionOperations,
+	luauExecutionFields,
+} from './LuauExecution/LuauExecutionDescription';
 export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Cloud',
@@ -56,6 +60,10 @@ export class RobloxCloud implements INodeType {
 						value: 'group',
 					},
 					{
+						name: 'Luau Execution',
+						value: 'luauExecution',
+					},
+					{
 						name: 'Place',
 						value: 'place',
 					},
@@ -92,6 +100,9 @@ export class RobloxCloud implements INodeType {
 
 			...groupOperations,
 			...groupFields,
+
+			...luauExecutionOperations,
+			...luauExecutionFields,
 
 			...userOperations,
 			...userFields,
