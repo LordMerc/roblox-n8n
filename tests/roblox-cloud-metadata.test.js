@@ -102,6 +102,64 @@ const luauExecutionResource = resourceParameter.options.find(
 
 assert.ok(luauExecutionResource, 'Luau Execution resource should exist');
 
+const universeOperationParameter = node.description.properties.find(
+	(parameter) =>
+		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('universe'),
+);
+
+assert.ok(universeOperationParameter, 'Universe operation parameter should exist');
+
+const expectedBansAndBlocksOperationMethods = {
+	get_place_user_restriction: 'GET',
+	get_user_restriction_universe: 'GET',
+	get_user_restrictions_universe: 'GET',
+	list_place_user_restrictions: 'GET',
+	list_user_restriction_logs: 'GET',
+	update_place_user_restriction: 'PATCH',
+	update_user_restriction_universe: 'PATCH',
+};
+
+const universeOperationsByValue = Object.fromEntries(
+	universeOperationParameter.options.map((operation) => [operation.value, operation]),
+);
+
+for (const [operationValue, method] of Object.entries(expectedBansAndBlocksOperationMethods)) {
+	assert.ok(
+		universeOperationsByValue[operationValue],
+		`Universe Bans and Blocks operation ${operationValue} should exist`,
+	);
+	assert.equal(universeOperationsByValue[operationValue].routing.request.method, method);
+}
+
+const userRestrictionsQueryParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'user_restrictions_query',
+);
+
+assert.ok(userRestrictionsQueryParameter, 'User restrictions query parameter should exist');
+
+const userRestrictionUpdateFieldsParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'user_restriction_game_join_restriction',
+);
+
+assert.ok(
+	userRestrictionUpdateFieldsParameter,
+	'User restriction game join restriction fields should exist',
+);
+
+for (const fieldName of [
+	'active',
+	'displayReason',
+	'duration',
+	'excludeAltAccounts',
+	'privateReason',
+	'startTime',
+]) {
+	assert.ok(
+		userRestrictionUpdateFieldsParameter.options.some((option) => option.name === fieldName),
+		`User restriction update field ${fieldName} should exist`,
+	);
+}
+
 const groupOperationParameter = node.description.properties.find(
 	(parameter) =>
 		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('group'),
@@ -452,6 +510,163 @@ assert.equal(
 	'/cloud/v2/universes/98765/subscription-products/monthly-vip/subscriptions/35188269',
 );
 assert.equal(getSubscriptionOperation.routing.request.qs.view, '={{ $parameter["view"] }}');
+
+const listUniverseUserRestrictionsUrl = new Tournament().execute(
+	universeOperationsByValue.get_user_restrictions_universe.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+		},
+	},
+);
+
+assert.equal(
+	listUniverseUserRestrictionsUrl,
+	'/cloud/v2/universes/123456/user-restrictions',
+);
+assert.deepEqual(
+	universeOperationsByValue.get_user_restrictions_universe.routing.request.qs,
+	{
+		maxPageSize: '={{ $parameter["user_restrictions_query"].maxPageSize }}',
+		pageToken: '={{ $parameter["user_restrictions_query"].pageToken }}',
+	},
+);
+
+const getUniverseUserRestrictionUrl = new Tournament().execute(
+	universeOperationsByValue.get_user_restriction_universe.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			userRestrictionId: '35188269',
+		},
+	},
+);
+
+assert.equal(
+	getUniverseUserRestrictionUrl,
+	'/cloud/v2/universes/123456/user-restrictions/35188269',
+);
+
+const updateUniverseUserRestrictionUrl = new Tournament().execute(
+	universeOperationsByValue.update_user_restriction_universe.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			userRestrictionId: '35188269',
+		},
+	},
+);
+
+assert.equal(
+	updateUniverseUserRestrictionUrl,
+	'/cloud/v2/universes/123456/user-restrictions/35188269',
+);
+assert.deepEqual(
+	universeOperationsByValue.update_user_restriction_universe.routing.request.qs,
+	{
+		updateMask: '={{ $parameter["userRestrictionUpdateMask"] }}',
+		'idempotencyKey.key': '={{ $parameter["idempotencyKeyKey"] }}',
+		'idempotencyKey.firstSent': '={{ $parameter["idempotencyKeyFirstSent"] }}',
+	},
+);
+
+const updateUniverseUserRestrictionBody =
+	universeOperationsByValue.update_user_restriction_universe.routing.request.body;
+
+assert.equal(typeof updateUniverseUserRestrictionBody, 'string');
+for (const bodyField of [
+	'gameJoinRestriction',
+	'active',
+	'displayReason',
+	'duration',
+	'excludeAltAccounts',
+	'privateReason',
+	'startTime',
+]) {
+	assert.ok(
+		updateUniverseUserRestrictionBody.includes(bodyField),
+		`Update user restriction body should map ${bodyField}`,
+	);
+}
+
+const listPlaceUserRestrictionsUrl = new Tournament().execute(
+	universeOperationsByValue.list_place_user_restrictions.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			placeId: '98765',
+		},
+	},
+);
+
+assert.equal(
+	listPlaceUserRestrictionsUrl,
+	'/cloud/v2/universes/123456/places/98765/user-restrictions',
+);
+assert.deepEqual(universeOperationsByValue.list_place_user_restrictions.routing.request.qs, {
+	maxPageSize: '={{ $parameter["user_restrictions_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["user_restrictions_query"].pageToken }}',
+});
+
+const getPlaceUserRestrictionUrl = new Tournament().execute(
+	universeOperationsByValue.get_place_user_restriction.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			placeId: '98765',
+			userRestrictionId: '35188269',
+		},
+	},
+);
+
+assert.equal(
+	getPlaceUserRestrictionUrl,
+	'/cloud/v2/universes/123456/places/98765/user-restrictions/35188269',
+);
+
+const updatePlaceUserRestrictionUrl = new Tournament().execute(
+	universeOperationsByValue.update_place_user_restriction.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+			placeId: '98765',
+			userRestrictionId: '35188269',
+		},
+	},
+);
+
+assert.equal(
+	updatePlaceUserRestrictionUrl,
+	'/cloud/v2/universes/123456/places/98765/user-restrictions/35188269',
+);
+assert.deepEqual(universeOperationsByValue.update_place_user_restriction.routing.request.qs, {
+	updateMask: '={{ $parameter["userRestrictionUpdateMask"] }}',
+	'idempotencyKey.key': '={{ $parameter["idempotencyKeyKey"] }}',
+	'idempotencyKey.firstSent': '={{ $parameter["idempotencyKeyFirstSent"] }}',
+});
+assert.equal(
+	universeOperationsByValue.update_place_user_restriction.routing.request.body,
+	updateUniverseUserRestrictionBody,
+);
+
+const listUserRestrictionLogsUrl = new Tournament().execute(
+	universeOperationsByValue.list_user_restriction_logs.routing.request.url.slice(1),
+	{
+		$parameter: {
+			universeId: '123456',
+		},
+	},
+);
+
+assert.equal(
+	listUserRestrictionLogsUrl,
+	'/cloud/v2/universes/123456/user-restrictions:listLogs',
+);
+assert.deepEqual(universeOperationsByValue.list_user_restriction_logs.routing.request.qs, {
+	maxPageSize: '={{ $parameter["arguments_list_user_restriction_logs"].maxPageSize }}',
+	pageToken: '={{ $parameter["arguments_list_user_restriction_logs"].pageToken }}',
+	filter: '={{ $parameter["arguments_list_user_restriction_logs"].filter }}',
+});
 
 const listForumCategoriesUrl = new Tournament().execute(
 	groupOperationsByValue.list_forum_categories.routing.request.url.slice(1),

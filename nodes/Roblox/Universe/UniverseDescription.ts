@@ -1,5 +1,29 @@
 import type { INodeProperties } from 'n8n-workflow';
 
+const USER_RESTRICTION_BODY = `={{ {
+	gameJoinRestriction: Object.fromEntries(
+		Object.entries({
+			active: $parameter["user_restriction_game_join_restriction"].active,
+			displayReason: $parameter["user_restriction_game_join_restriction"].displayReason,
+			duration: $parameter["user_restriction_game_join_restriction"].duration,
+			excludeAltAccounts: $parameter["user_restriction_game_join_restriction"].excludeAltAccounts,
+			privateReason: $parameter["user_restriction_game_join_restriction"].privateReason,
+			startTime: $parameter["user_restriction_game_join_restriction"].startTime,
+		}).filter(([_, value]) => value !== "" && value !== null && value !== undefined)
+	)
+} }}`;
+
+const USER_RESTRICTION_UPDATE_QS = {
+	updateMask: '={{ $parameter["userRestrictionUpdateMask"] }}',
+	'idempotencyKey.key': '={{ $parameter["idempotencyKeyKey"] }}',
+	'idempotencyKey.firstSent': '={{ $parameter["idempotencyKeyFirstSent"] }}',
+};
+
+const USER_RESTRICTIONS_LIST_QS = {
+	maxPageSize: '={{ $parameter["user_restrictions_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["user_restrictions_query"].pageToken }}',
+};
+
 export const universeOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
@@ -32,6 +56,18 @@ export const universeOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Place User Restriction',
+				value: 'get_place_user_restriction',
+				description: 'Get a user restriction for a place',
+				action: 'Get place user restriction',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/places/{{ $parameter["placeId"] }}/user-restrictions/{{ $parameter["userRestrictionId"] }}',
+					},
+				},
+			},
+			{
 				name: 'Get Universe',
 				value: 'get_universe',
 				description: 'Get details of a universe',
@@ -44,42 +80,59 @@ export const universeOperations: INodeProperties[] = [
 				},
 			},
 			{
-				name: 'Get User Restriction Universe',
+				name: 'Get Universe User Restriction',
 				value: 'get_user_restriction_universe',
 				description: 'Get a user restriction for a universe',
 				action: 'Get universe user restriction',
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions/{{ $parameter["userId"] }}',
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions/{{ $parameter["userRestrictionId"] }}',
 					},
 				},
 			},
 			{
-				name: 'Get User Restrictions Universe',
-				value: 'get_user_restrictions_universe',
-				description: 'Get many user restrictions for a universe',
-				action: 'Get many universe user restrictions',
+				name: 'List Place User Restrictions',
+				value: 'list_place_user_restrictions',
+				description: 'List user restrictions for a place',
+				action: 'List place user restrictions',
 				routing: {
 					request: {
 						method: 'GET',
-						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions',
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/places/{{ $parameter["placeId"] }}/user-restrictions',
+						qs: USER_RESTRICTIONS_LIST_QS,
 					},
 				},
 			},
 			{
-				name: 'List User Restriction Logs',
+				name: 'List Universe User Restriction Logs',
 				value: 'list_user_restriction_logs',
-				description: 'Publish a message to a universe live servers',
-				action: 'List user restriction logs',
+				description: 'List user restriction changes within a universe',
+				action: 'List universe user restriction logs',
 				routing: {
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions:listLogs',
 						qs: {
-							maxPageSize: '={{ $parameter["maxPageSize"] || 100 }}',
-							pageToken: '={{ $parameter["pageToken"] || "" }}',
+							maxPageSize:
+								'={{ $parameter["arguments_list_user_restriction_logs"].maxPageSize }}',
+							pageToken:
+								'={{ $parameter["arguments_list_user_restriction_logs"].pageToken }}',
+							filter: '={{ $parameter["arguments_list_user_restriction_logs"].filter }}',
 						},
+					},
+				},
+			},
+			{
+				name: 'List Universe User Restrictions',
+				value: 'get_user_restrictions_universe',
+				description: 'List user restrictions for a universe',
+				action: 'List universe user restrictions',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions',
+						qs: USER_RESTRICTIONS_LIST_QS,
 					},
 				},
 			},
@@ -113,37 +166,30 @@ export const universeOperations: INodeProperties[] = [
 				},
 			},
 			{
-				name: 'Update User Restriction Universe',
+				name: 'Update Place User Restriction',
+				value: 'update_place_user_restriction',
+				description: 'Update a user restriction for a place',
+				action: 'Update place user restriction',
+				routing: {
+					request: {
+						method: 'PATCH',
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/places/{{ $parameter["placeId"] }}/user-restrictions/{{ $parameter["userRestrictionId"] }}',
+						qs: USER_RESTRICTION_UPDATE_QS,
+						body: USER_RESTRICTION_BODY,
+					},
+				},
+			},
+			{
+				name: 'Update Universe User Restriction',
 				value: 'update_user_restriction_universe',
 				description: 'Update a user restriction for a universe',
 				action: 'Update universe user restriction',
 				routing: {
 					request: {
 						method: 'PATCH',
-						//url: 'https://postman-echo.com/patch', // Placeholder URL, replace with actual endpoint
-						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions/{{ $parameter["userId"] }}',
-						qs: {
-							updateMask: `={{
-								($parameter["restriction_update_mask"]?.fields || [])
-									.flatMap(item => Object.keys(item))
-									.filter(k => $parameter["restriction_update_mask"].fields[0][k] !== undefined)
-									.map(k => \`game_join_restriction.\${k}\`)
-									.join(',')
-							}}`,
-
-							'idempotencyKey.key': '={{ Math.random().toString(36).slice(2, 10) }}',
-							'idempotencyKey.firstSent': '={{ new Date().toISOString() }}',
-						},
-						body: {
-							gameJoinRestriction: `={{ Object.fromEntries(
-								Object.entries($parameter["restriction_update_mask"].fields || {})
-									.filter(([_, v]) => v !== "" && v !== null && v !== undefined)
-							) }}`,
-						},
-
-						headers: {
-							'Content-Type': 'application/json',
-						},
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/user-restrictions/{{ $parameter["userRestrictionId"] }}',
+						qs: USER_RESTRICTION_UPDATE_QS,
+						body: USER_RESTRICTION_BODY,
 					},
 				},
 			},
@@ -159,19 +205,56 @@ export const universeFields: INodeProperties[] = [
 		type: 'string',
 		default: '',
 		required: true,
-		description: 'The Universe ID of the place',
 		displayOptions: {
 			show: {
 				resource: ['universe'],
 				operation: [
+					'generate_speech_asset',
+					'get_place_user_restriction',
 					'get_universe',
+					'get_user_restriction_universe',
+					'get_user_restrictions_universe',
+					'list_place_user_restrictions',
+					'list_user_restriction_logs',
 					'publish_universe_message',
 					'restart_universe_servers',
+					'update_place_user_restriction',
 					'update_user_restriction_universe',
-					'get_user_restrictions_universe',
+				],
+			},
+		},
+	},
+	{
+		displayName: 'Place ID',
+		name: 'placeId',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: [
+					'get_place_user_restriction',
+					'list_place_user_restrictions',
+					'update_place_user_restriction',
+				],
+			},
+		},
+	},
+	{
+		displayName: 'User Restriction ID',
+		name: 'userRestrictionId',
+		type: 'string',
+		default: '',
+		required: true,
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: [
+					'get_place_user_restriction',
 					'get_user_restriction_universe',
-					'list_user_restriction_logs',
-					'generate_speech_asset',
+					'update_place_user_restriction',
+					'update_user_restriction_universe',
 				],
 			},
 		},
@@ -205,18 +288,34 @@ export const universeFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: 'User ID',
-		name: 'userId',
-		type: 'string',
-		default: '',
-		required: true,
-		description: 'The User ID to retrieve or update restriction',
+		displayName: 'Query Parameters',
+		name: 'user_restrictions_query',
+		default: {},
+		type: 'collection',
+		description: "The request's query parameters",
 		displayOptions: {
 			show: {
 				resource: ['universe'],
-				operation: ['get_user_restriction_universe', 'update_user_restriction_universe'],
+				operation: ['get_user_restrictions_universe', 'list_place_user_restrictions'],
 			},
 		},
+		options: [
+			{
+				displayName: 'Max Page Size',
+				name: 'maxPageSize',
+				type: 'number',
+				default: 10,
+				description: 'Maximum number of user restrictions to return, up to 100',
+			},
+			{
+				displayName: 'Page Token',
+				name: 'pageToken',
+				type: 'string',
+				typeOptions: { password: true },
+				default: '',
+				description: 'Token for pagination',
+			},
+		],
 	},
 	{
 		displayName: 'Query Parameters',
@@ -232,21 +331,126 @@ export const universeFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: 'Page Token',
-				name: 'pageToken',
+				displayName: 'Filter',
+				name: 'filter',
 				type: 'string',
-				typeOptions: {
-					password: true,
-				},
 				default: '',
-				description: 'Token for pagination',
+				description:
+					'Optional CEL filter expression, for example user == "users/123" && place == "places/456"',
 			},
 			{
 				displayName: 'Max Page Size',
 				name: 'maxPageSize',
 				type: 'number',
-				default: 1,
-				description: 'Maximum number of results per page',
+				default: 10,
+				description: 'Maximum number of user restriction logs to return, up to 100',
+			},
+			{
+				displayName: 'Page Token',
+				name: 'pageToken',
+				type: 'string',
+				typeOptions: { password: true },
+				default: '',
+				description: 'Token for pagination',
+			},
+		],
+	},
+	{
+		displayName: 'Idempotency Key',
+		name: 'idempotencyKeyKey',
+		type: 'string',
+		default: '',
+		description: 'Unique key to use for idempotency',
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: ['update_place_user_restriction', 'update_user_restriction_universe'],
+			},
+		},
+	},
+	{
+		displayName: 'Idempotency Key First Sent',
+		name: 'idempotencyKeyFirstSent',
+		type: 'string',
+		default: '',
+		description: 'ISO timestamp at which the first idempotent request was sent',
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: ['update_place_user_restriction', 'update_user_restriction_universe'],
+			},
+		},
+	},
+	{
+		displayName: 'Update Mask',
+		name: 'userRestrictionUpdateMask',
+		type: 'string',
+		default: 'game_join_restriction',
+		description:
+			'Fields to update. Use game_join_restriction; nested game_join_restriction fields are not supported by Roblox.',
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: ['update_place_user_restriction', 'update_user_restriction_universe'],
+			},
+		},
+	},
+	{
+		displayName: 'Update Fields',
+		name: 'user_restriction_game_join_restriction',
+		default: {},
+		type: 'collection',
+		description: 'The game join restriction fields to update',
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: ['update_place_user_restriction', 'update_user_restriction_universe'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Active',
+				name: 'active',
+				type: 'boolean',
+				default: true,
+				description: 'Whether the user restriction is active',
+			},
+			{
+				displayName: 'Display Reason',
+				name: 'displayReason',
+				type: 'string',
+				default: '',
+				description: 'The public reason displayed to the user',
+			},
+			{
+				displayName: 'Duration',
+				name: 'duration',
+				type: 'string',
+				default: '',
+				placeholder: '3600s',
+				description:
+					'Duration of the restriction. Omit for permanent restrictions. Valid range is 1s to 315576000000s.',
+			},
+			{
+				displayName: 'Exclude Alt Accounts',
+				name: 'excludeAltAccounts',
+				type: 'boolean',
+				default: false,
+				description: 'Whether to avoid propagating the restriction to alternate accounts',
+			},
+			{
+				displayName: 'Private Reason',
+				name: 'privateReason',
+				type: 'string',
+				default: '',
+				description: 'The private reason for the user restriction',
+			},
+			{
+				displayName: 'Start Time',
+				name: 'startTime',
+				type: 'string',
+				default: '',
+				description: 'Restriction start time as an RFC 3339 timestamp',
 			},
 		],
 	},
@@ -303,69 +507,7 @@ export const universeFields: INodeProperties[] = [
 						type: 'string',
 						default: '',
 						required: true,
-						description: 'Whether the user restriction is active',
-					},
-				],
-			},
-		],
-	},
-	{
-		displayName: 'Update Fields',
-		name: 'restriction_update_mask',
-		default: {},
-		type: 'fixedCollection',
-		displayOptions: {
-			show: {
-				resource: ['universe'],
-				operation: ['update_user_restriction_universe'],
-			},
-		},
-		required: true,
-		options: [
-			{
-				name: 'fields',
-				displayName: 'Game Join Restriction Fields',
-				values: [
-					{
-						displayName: 'Active',
-						name: 'active',
-						type: 'boolean',
-						default: true,
-						required: true,
-						description: 'Whether the user restriction is active',
-					},
-					{
-						displayName: 'Display Reason',
-						name: 'displayReason',
-						type: 'string',
-						default: '',
-						required: true,
-						description: 'The public reason for the user restriction',
-					},
-					{
-						displayName: 'Duration',
-						name: 'duration',
-						type: 'string',
-						placeholder: '3s',
-						default: '',
-						required: true,
-						description: 'The duration of the user restriction (e.g., "3s", "1h", "2d")',
-					},
-					{
-						displayName: 'Exclude Alt Accounts',
-						name: 'excludeAltAccounts',
-						type: 'boolean',
-						default: true,
-						required: true,
-						description: 'Whether to exclude alternate accounts from the restriction',
-					},
-					{
-						displayName: 'Private Reason',
-						name: 'privateReason',
-						type: 'string',
-						default: '',
-						required: true,
-						description: 'The private reason for the user restriction',
+						description: 'The voice ID of the speech asset',
 					},
 				],
 			},

@@ -16,6 +16,7 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
 - Storage Open Cloud support for data stores, memory store queues, memory store sorted maps, memory store flush operations, and ordered data stores
 - Luau Execution Open Cloud support for creating tasks, polling task state, reading logs, and creating binary inputs
 - Group Forum Open Cloud support for listing forum categories, posts, and comments
+- Bans and Blocks Open Cloud support for universe-level and place-level user restrictions
 
 > ✅ Ideal for developers using Roblox + automation tools like n8n to build dashboards, pipelines, and custom tools.
 
@@ -29,7 +30,7 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
   - `Place`: operations `get_place`, `update_place`. Arguments: `universeId`, `placeId`, `place_update_mask` (`displayName`, `description`, `serverSize`).
   - `Storage`: operations include data store control (`list_data_stores`, `delete_data_store`, `undelete_data_store`, `snapshot_data_stores`), data store entries and scoped entries (`list`, `get`, `create`, `update`, `delete`, `increment`, `list revisions`), memory store queues (`create`, `read`, `discard`), memory store sorted maps (`list`, `get`, `create`, `update`, `delete`), memory store flush (`flush_memory_store`, `get_memory_store_flush_operation`), and ordered data store entries (`list`, `get`, `create`, `update`, `delete`, `increment`). Arguments: `universeId`, `dataStoreId`, `scopeId`, `entryId`, `queueId`, `sortedMapId`, `itemId`, `orderedDataStoreId`, `operationId`, `dataStoreEntryJson`, `incrementDataStoreEntryJson`, `memoryStoreQueueItemJson`, `discardMemoryStoreQueueItemsJson`, `memoryStoreSortedMapItemJson`, `orderedDataStoreEntryJson`, `incrementOrderedDataStoreEntryJson`, query/update collections for list, create, read, and update operations (`filter`, `maxPageSize`, `pageToken`, `showDeleted`, `id`, `allowMissing`, `allOrNothing`, `count`, `invisibilityWindow`, `orderBy`).
   - `Team Create`: operations `close_team_test_session`, `get_active_session_members`, `get_many_team_create_settings`, `get_team_create_settings`, `remove_team_create_membership`, `update_team_create_settings`. Arguments: `placeId`, `gameId`, `team_create_pagination` (`cursor`, `limit`), `universeId`, `isEnabled`, `userId`, `universeIds`.
-  - `Universe`: operations `generate_speech_asset`, `get_universe`, `get_user_restriction_universe`, `get_user_restrictions_universe`, `list_user_restriction_logs`, `publish_universe_message`, `restart_universe_servers`, `update_user_restriction_universe`. Arguments: `universeId`, `topic`, `message`, `userId`, `arguments_list_user_restriction_logs` (`pageToken`, `maxPageSize`), `speechText`, `speechStyleFields` (`pitch`, `speed`, `voiceId`), `restriction_update_mask` (`active`, `displayReason`, `duration`, `excludeAltAccounts`, `privateReason`).
+  - `Universe`: operations `generate_speech_asset`, `get_place_user_restriction`, `get_universe`, `get_user_restriction_universe`, `get_user_restrictions_universe`, `list_place_user_restrictions`, `list_user_restriction_logs`, `publish_universe_message`, `restart_universe_servers`, `update_place_user_restriction`, `update_user_restriction_universe`. Arguments: `universeId`, `placeId`, `userRestrictionId`, `topic`, `message`, `user_restrictions_query` (`maxPageSize`, `pageToken`), `arguments_list_user_restriction_logs` (`filter`, `maxPageSize`, `pageToken`), `idempotencyKeyKey`, `idempotencyKeyFirstSent`, `userRestrictionUpdateMask`, `user_restriction_game_join_restriction` (`active`, `displayReason`, `duration`, `excludeAltAccounts`, `privateReason`, `startTime`), `speechText`, `speechStyleFields` (`pitch`, `speed`, `voiceId`).
   - `User`: operations `generate_thumbnail`, `get_subscription`, `get_user`. Arguments: `userId`, `universeId`, `subscriptionProductId`, `subscriptionId`, `view`, `arguments_thumbnail_generation` (`size`, `format`, `shape`).
 - `Roblox Legacy`
   - `Legacy Place`: operations `get_favorites_count`, `get_universe_products`. Arguments: `universeId`, `universeIds`.
@@ -48,6 +49,10 @@ The Config resource uses the existing Roblox Cloud API key credential. Published
 ## User Subscription API Scopes
 
 The Get Subscription user operation requires either `universe:write` or `universe.subscription-product.subscription:read`.
+
+## Bans and Blocks API Scopes
+
+The universe and place user restriction operations use the existing Roblox Cloud API key credential. Listing and getting user restrictions, and listing user restriction logs, require `universe.user-restriction:read`. Updating universe-level or place-level user restrictions requires `universe.user-restriction:write`. Roblox also documents group ban and blocked-keyword endpoints on the Bans and Blocks page, but those endpoints require legacy cookie authentication rather than the `RobloxCloudApi` API-key credential.
 
 ## Team Create API Scopes
 
