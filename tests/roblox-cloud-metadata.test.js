@@ -102,6 +102,65 @@ const luauExecutionResource = resourceParameter.options.find(
 
 assert.ok(luauExecutionResource, 'Luau Execution resource should exist');
 
+const groupOperationParameter = node.description.properties.find(
+	(parameter) =>
+		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('group'),
+);
+
+assert.ok(groupOperationParameter, 'Group operation parameter should exist');
+
+const expectedGroupOperationMethods = {
+	accept_join_request: 'POST',
+	assign_member_role: 'POST',
+	decline_join_request: 'POST',
+	get_audit_log: 'GET',
+	get_group: 'GET',
+	get_group_policies: 'POST',
+	get_join_requests: 'GET',
+	get_manageable_groups: 'GET',
+	get_memberships: 'GET',
+	get_pending_groups: 'GET',
+	get_role: 'GET',
+	get_roles: 'GET',
+	get_settings: 'GET',
+	list_forum_categories: 'GET',
+	list_forum_comments: 'GET',
+	list_forum_posts: 'GET',
+	unassign_member_role: 'POST',
+	update_description: 'PATCH',
+	update_member_role: 'PATCH',
+	update_notification_preference: 'PATCH',
+	update_settings: 'PATCH',
+};
+
+const groupOperationsByValue = Object.fromEntries(
+	groupOperationParameter.options.map((operation) => [operation.value, operation]),
+);
+
+for (const [operationValue, method] of Object.entries(expectedGroupOperationMethods)) {
+	assert.ok(groupOperationsByValue[operationValue], `Group operation ${operationValue} should exist`);
+	assert.equal(groupOperationsByValue[operationValue].routing.request.method, method);
+}
+
+assert.ok(!groupOperationsByValue.get_shout, 'Group shout read operation should be sunset');
+assert.ok(!groupOperationsByValue.update_group_shout, 'Group shout update operation should be sunset');
+
+const groupForumPostsQueryParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'group_forum_posts_query',
+);
+
+assert.ok(groupForumPostsQueryParameter, 'Group forum posts query parameter should exist');
+
+const groupForumPostsViewField = groupForumPostsQueryParameter.options.find(
+	(option) => option.name === 'view',
+);
+
+assert.ok(groupForumPostsViewField, 'Group forum posts view field should exist');
+assert.deepEqual(
+	groupForumPostsViewField.options.map((option) => option.value),
+	['VIEW_UNSPECIFIED', 'FULL', 'FULL_WITH_FIRST_COMMENT'],
+);
+
 const configOperationParameter = node.description.properties.find(
 	(parameter) =>
 		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('config'),
@@ -393,6 +452,217 @@ assert.equal(
 	'/cloud/v2/universes/98765/subscription-products/monthly-vip/subscriptions/35188269',
 );
 assert.equal(getSubscriptionOperation.routing.request.qs.view, '={{ $parameter["view"] }}');
+
+const listForumCategoriesUrl = new Tournament().execute(
+	groupOperationsByValue.list_forum_categories.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+		},
+	},
+);
+
+assert.equal(listForumCategoriesUrl, '/cloud/v2/groups/12345/forum-categories');
+assert.deepEqual(groupOperationsByValue.list_forum_categories.routing.request.qs, {
+	maxPageSize: '={{ $parameter["group_forum_categories_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["group_forum_categories_query"].pageToken }}',
+	filter: '={{ $parameter["group_forum_categories_query"].filter }}',
+});
+
+const listForumPostsUrl = new Tournament().execute(
+	groupOperationsByValue.list_forum_posts.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+			forumCategoryId: 'category-1',
+		},
+	},
+);
+
+assert.equal(
+	listForumPostsUrl,
+	'/cloud/v2/groups/12345/forum-categories/category-1/posts',
+);
+assert.deepEqual(groupOperationsByValue.list_forum_posts.routing.request.qs, {
+	maxPageSize: '={{ $parameter["group_forum_posts_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["group_forum_posts_query"].pageToken }}',
+	filter: '={{ $parameter["group_forum_posts_query"].filter }}',
+	view: '={{ $parameter["group_forum_posts_query"].view }}',
+});
+
+const listForumCommentsUrl = new Tournament().execute(
+	groupOperationsByValue.list_forum_comments.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+			forumCategoryId: 'category-1',
+			postId: 'post-1',
+		},
+	},
+);
+
+assert.equal(
+	listForumCommentsUrl,
+	'/cloud/v2/groups/12345/forum-categories/category-1/posts/post-1/comments',
+);
+assert.deepEqual(groupOperationsByValue.list_forum_comments.routing.request.qs, {
+	maxPageSize: '={{ $parameter["group_forum_comments_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["group_forum_comments_query"].pageToken }}',
+	filter: '={{ $parameter["group_forum_comments_query"].filter }}',
+});
+
+const listJoinRequestsUrl = new Tournament().execute(
+	groupOperationsByValue.get_join_requests.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+		},
+	},
+);
+
+assert.equal(listJoinRequestsUrl, '/cloud/v2/groups/12345/join-requests');
+assert.deepEqual(groupOperationsByValue.get_join_requests.routing.request.qs, {
+	maxPageSize: '={{ $parameter["group_join_requests_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["group_join_requests_query"].pageToken }}',
+	filter: '={{ $parameter["group_join_requests_query"].filter }}',
+});
+assert.deepEqual(groupOperationsByValue.accept_join_request.routing.request.body, {});
+assert.deepEqual(groupOperationsByValue.decline_join_request.routing.request.body, {});
+
+const updateMemberRoleUrl = new Tournament().execute(
+	groupOperationsByValue.update_member_role.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+			membershipId: 'membership-1',
+		},
+	},
+);
+
+assert.equal(updateMemberRoleUrl, '/cloud/v2/groups/12345/memberships/membership-1');
+assert.deepEqual(groupOperationsByValue.update_member_role.routing.request.body, {
+	role: '=groups/{{ $parameter["groupId"] }}/roles/{{ $parameter["roleId"] }}',
+});
+
+const assignMemberRoleUrl = new Tournament().execute(
+	groupOperationsByValue.assign_member_role.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+			membershipId: 'membership-1',
+		},
+	},
+);
+
+assert.equal(
+	assignMemberRoleUrl,
+	'/cloud/v2/groups/12345/memberships/membership-1:assignRole',
+);
+assert.deepEqual(groupOperationsByValue.assign_member_role.routing.request.body, {
+	role: '=groups/{{ $parameter["groupId"] }}/roles/{{ $parameter["roleId"] }}',
+});
+
+const unassignMemberRoleUrl = new Tournament().execute(
+	groupOperationsByValue.unassign_member_role.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+			membershipId: 'membership-1',
+		},
+	},
+);
+
+assert.equal(
+	unassignMemberRoleUrl,
+	'/cloud/v2/groups/12345/memberships/membership-1:unassignRole',
+);
+assert.deepEqual(groupOperationsByValue.unassign_member_role.routing.request.body, {
+	role: '=groups/{{ $parameter["groupId"] }}/roles/{{ $parameter["roleId"] }}',
+});
+
+assert.deepEqual(groupOperationsByValue.get_roles.routing.request.qs, {
+	maxPageSize: '={{ $parameter["group_roles_query"].maxPageSize }}',
+	pageToken: '={{ $parameter["group_roles_query"].pageToken }}',
+});
+
+const groupAuditLogUrl = new Tournament().execute(
+	groupOperationsByValue.get_audit_log.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+		},
+	},
+);
+
+assert.equal(groupAuditLogUrl, '/legacy-groups/v1/groups/12345/audit-log');
+assert.deepEqual(groupOperationsByValue.get_audit_log.routing.request.qs, {
+	actionType: '={{ $parameter["group_audit_log_query"].actionType }}',
+	userId: '={{ $parameter["group_audit_log_query"].userId }}',
+	limit: '={{ $parameter["group_audit_log_query"].limit }}',
+	cursor: '={{ $parameter["group_audit_log_query"].cursor }}',
+	sortOrder: '={{ $parameter["group_audit_log_query"].sortOrder }}',
+});
+
+const updateDescriptionUrl = new Tournament().execute(
+	groupOperationsByValue.update_description.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+		},
+	},
+);
+
+assert.equal(updateDescriptionUrl, '/legacy-groups/v1/groups/12345/description');
+assert.deepEqual(groupOperationsByValue.update_description.routing.request.body, {
+	description: '={{ $parameter["description"] }}',
+});
+
+const getSettingsUrl = new Tournament().execute(
+	groupOperationsByValue.get_settings.routing.request.url.slice(1),
+	{
+		$parameter: {
+			groupId: '12345',
+		},
+	},
+);
+
+assert.equal(getSettingsUrl, '/legacy-groups/v1/groups/12345/settings');
+assert.deepEqual(groupOperationsByValue.update_settings.routing.request.body, {
+	isApprovalRequired: '={{ $parameter["group_settings_update"].isApprovalRequired }}',
+	areEnemiesAllowed: '={{ $parameter["group_settings_update"].areEnemiesAllowed }}',
+	areGroupFundsVisible: '={{ $parameter["group_settings_update"].areGroupFundsVisible }}',
+	areGroupGamesVisible: '={{ $parameter["group_settings_update"].areGroupGamesVisible }}',
+	verificationLevel: '={{ $parameter["group_settings_update"].verificationLevel }}',
+	accountTenureRequirement:
+		'={{ $parameter["group_settings_update"].accountTenureRequirement }}',
+	slowmode: '={{ $parameter["group_settings_update"].slowmode }}',
+	isMemberListVisibleToPublic:
+		'={{ $parameter["group_settings_update"].isMemberListVisibleToPublic }}',
+});
+
+assert.deepEqual(groupOperationsByValue.update_notification_preference.routing.request.body, {
+	notificationsEnabled:
+		'={{ $parameter["group_notification_preference"].notificationsEnabled }}',
+	type: '={{ $parameter["group_notification_preference"].type }}',
+});
+
+assert.deepEqual(groupOperationsByValue.get_group_policies.routing.request.body, {
+	groupIds:
+		'={{ $parameter["groupPolicyGroupIds"].split(",").map(id => id.trim()).filter(Boolean).map(id => Number(id)) }}',
+});
+
+assert.equal(
+	groupOperationsByValue.get_group_policies.routing.request.url,
+	'=/legacy-groups/v1/groups/policies',
+);
+assert.equal(
+	groupOperationsByValue.get_manageable_groups.routing.request.url,
+	'=/legacy-develop/v1/user/groups/canmanage',
+);
+assert.equal(
+	groupOperationsByValue.get_pending_groups.routing.request.url,
+	'=/legacy-groups/v1/user/groups/pending',
+);
 
 const configValuesUrl = new Tournament().execute(
 	getConfigValuesOperation.routing.request.url.slice(1),
@@ -834,6 +1104,20 @@ const composedGetUserRequest = {
 assert.equal(composedGetUserRequest.baseURL, 'https://apis.roblox.com');
 assert.equal(composedGetUserRequest.headers['x-api-key'], '={{$credentials.apiKey}}');
 assert.equal(composedGetUserRequest.headers.Accept, 'application/json');
+
+const composedListForumPostsRequest = {
+	...node.description.requestDefaults,
+	...groupOperationsByValue.list_forum_posts.routing.request,
+	headers: {
+		...node.description.requestDefaults.headers,
+		...groupOperationsByValue.list_forum_posts.routing.request.headers,
+		...credentials.authenticate.properties.headers,
+	},
+};
+
+assert.equal(composedListForumPostsRequest.baseURL, 'https://apis.roblox.com');
+assert.equal(composedListForumPostsRequest.headers['x-api-key'], '={{$credentials.apiKey}}');
+assert.equal(composedListForumPostsRequest.headers.Accept, 'application/json');
 
 const composedGetConfigValuesRequest = {
 	...node.description.requestDefaults,
