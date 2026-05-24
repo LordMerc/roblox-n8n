@@ -21,7 +21,7 @@ export class RobloxCloud implements INodeType {
 		usableAsTool: true,
 		version: 1.5,
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
-		description: 'Interact with Roblox Cloud API',
+		description: 'Access Roblox Open Cloud APIs for groups, users, universes, places, storage, and more',
 		defaults: {
 			name: 'Roblox Cloud',
 		},

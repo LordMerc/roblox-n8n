@@ -65,7 +65,7 @@ export class RobloxCloudTrigger implements INodeType {
 		icon: 'file:roblox.svg',
 		group: ['trigger'],
 		version: 1,
-		description: 'Triggers on Roblox Group events (Audit Log, Join Requests)',
+		description: 'Access Roblox Open Cloud APIs for groups, users, universes, places, storage, and more',
 		defaults: {
 			name: 'Roblox Cloud Trigger',
 		},
