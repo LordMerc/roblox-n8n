@@ -166,19 +166,6 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
-				name: 'Ban User',
-				value: 'ban_user',
-				description: 'Ban a user from the group',
-				action: 'Ban user from group',
-				routing: {
-					request: {
-						method: 'POST',
-						baseURL: 'https://groups.roblox.com',
-						url: '=/v1/groups/{{ $parameter["groupId"] }}/bans/{{ $parameter["userId"] }}',
-					},
-				},
-			},
-			{
 				name: 'Decline Group Join Request',
 				value: 'decline_join_request',
 				description: 'Decline a group join request',
@@ -406,19 +393,6 @@ export const groupOperations: INodeProperties[] = [
 				},
 			},
 			{
-				name: 'Unban User',
-				value: 'unban_user',
-				description: 'Unban a user from the group',
-				action: 'Unban user from group',
-				routing: {
-					request: {
-						method: 'DELETE',
-						baseURL: 'https://groups.roblox.com',
-						url: '=/v1/groups/{{ $parameter["groupId"] }}/bans/{{ $parameter["userId"] }}',
-					},
-				},
-			},
-			{
 				name: 'Update Group Description',
 				value: 'update_description',
 				description: "Update a group's description",
@@ -513,7 +487,6 @@ export const groupFields: INodeProperties[] = [
 				operation: [
 					'accept_join_request',
 					'assign_member_role',
-					'ban_user',
 					'decline_join_request',
 					'get_audit_log',
 					'get_group',
@@ -526,7 +499,6 @@ export const groupFields: INodeProperties[] = [
 					'list_forum_comments',
 					'list_forum_posts',
 					'unassign_member_role',
-					'unban_user',
 					'update_description',
 					'update_member_role',
 					'update_notification_preference',
@@ -588,20 +560,6 @@ export const groupFields: INodeProperties[] = [
 			show: {
 				resource: ['group'],
 				operation: ['list_forum_comments'],
-			},
-		},
-	},
-	{
-		displayName: 'User ID',
-		name: 'userId',
-		type: 'string',
-		default: '',
-		required: true,
-		description: 'The ID of the user',
-		displayOptions: {
-			show: {
-				resource: ['group'],
-				operation: ['ban_user', 'unban_user'],
 			},
 		},
 	},

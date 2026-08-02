@@ -166,6 +166,30 @@ export const universeOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Update Universe',
+				value: 'update_universe',
+				description: 'Update a universe',
+				action: 'Update universe',
+				routing: {
+					request: {
+						method: 'PATCH',
+						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}',
+						qs: {
+							updateMask: '={{ $parameter["universeUpdateMask"] }}',
+						},
+						body: `={{ ((updateValue) => {
+	const update = typeof updateValue === "string" ? JSON.parse(updateValue) : updateValue;
+
+	if (update === null || Array.isArray(update) || typeof update !== "object") {
+		throw new Error("universeUpdateJson must be a JSON object");
+	}
+
+	return update;
+})($parameter["universeUpdateJson"]) }}`,
+					},
+				},
+			},
+			{
 				name: 'Update Place User Restriction',
 				value: 'update_place_user_restriction',
 				description: 'Update a user restriction for a place',
@@ -218,9 +242,38 @@ export const universeFields: INodeProperties[] = [
 					'list_user_restriction_logs',
 					'publish_universe_message',
 					'restart_universe_servers',
+					'update_universe',
 					'update_place_user_restriction',
 					'update_user_restriction_universe',
 				],
+			},
+		},
+	},
+	{
+		displayName: 'Update Mask',
+		name: 'universeUpdateMask',
+		type: 'string',
+		default: '',
+		required: true,
+		description: 'Comma-separated writable universe fields to update',
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: ['update_universe'],
+			},
+		},
+	},
+	{
+		displayName: 'Universe Update',
+		name: 'universeUpdateJson',
+		type: 'json',
+		default: '{}',
+		required: true,
+		description: 'JSON object containing only writable universe fields; requires universe:write scope',
+		displayOptions: {
+			show: {
+				resource: ['universe'],
+				operation: ['update_universe'],
 			},
 		},
 	},

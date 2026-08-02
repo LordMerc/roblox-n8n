@@ -22,6 +22,9 @@ const root = path.resolve(__dirname, '..');
 const { RobloxCloudApi } = require(path.join(root, 'credentials/RobloxCloudApi.credentials.ts'));
 const { RobloxCloud } = require(path.join(root, 'nodes/Roblox/RobloxCloud.node.ts'));
 const { RobloxLegacy } = require(path.join(root, 'nodes/Roblox/RobloxLegacy.node.ts'));
+const { RobloxCloud: CompiledRobloxCloud } = require(
+	path.join(root, 'dist/nodes/Roblox/RobloxCloud.node.js'),
+);
 
 const credentials = new RobloxCloudApi();
 
@@ -36,6 +39,13 @@ assert.deepEqual(credentials.authenticate, {
 
 const node = new RobloxCloud();
 const legacyNode = new RobloxLegacy();
+const compiledNode = new CompiledRobloxCloud();
+
+assert.deepEqual(
+	compiledNode.description,
+	node.description,
+	'Compiled Roblox Cloud node metadata should match the TypeScript source',
+);
 
 assert.equal(
 	node.description.usableAsTool,
@@ -102,6 +112,198 @@ const luauExecutionResource = resourceParameter.options.find(
 
 assert.ok(luauExecutionResource, 'Luau Execution resource should exist');
 
+const notificationResource = resourceParameter.options.find(
+	(resource) => resource.value === 'notification',
+);
+
+assert.ok(notificationResource, 'Notification resource should exist');
+
+const notificationOperationParameter = node.description.properties.find(
+	(parameter) =>
+		parameter.name === 'operation' &&
+		parameter.displayOptions?.show?.resource?.includes('notification'),
+);
+
+assert.ok(notificationOperationParameter, 'Notification operation parameter should exist');
+
+const createUserNotificationOperation = notificationOperationParameter.options.find(
+	(operation) => operation.value === 'create_user_notification',
+);
+
+assert.ok(createUserNotificationOperation, 'Create User Notification operation should exist');
+assert.equal(createUserNotificationOperation.routing.request.method, 'POST');
+assert.equal(
+	createUserNotificationOperation.routing.request.url,
+	'=/cloud/v2/users/{{ $parameter["userId"] }}/notifications',
+);
+
+const notificationField = (name) =>
+	node.description.properties.find(
+		(parameter) =>
+			parameter.name === name &&
+			parameter.displayOptions?.show?.resource?.includes('notification') &&
+			parameter.displayOptions?.show?.operation?.includes('create_user_notification'),
+	);
+
+for (const fieldName of ['userId', 'universeId', 'notificationMessageId']) {
+	const field = notificationField(fieldName);
+	assert.ok(field, `Notification field ${fieldName} should exist`);
+	assert.equal(field.required, true, `Notification field ${fieldName} should be required`);
+}
+
+for (const fieldName of [
+	'notificationParametersJson',
+	'notificationLaunchData',
+	'notificationAnalyticsCategory',
+]) {
+	const field = notificationField(fieldName);
+	assert.ok(field, `Notification field ${fieldName} should exist`);
+	assert.notEqual(field.required, true, `Notification field ${fieldName} should be optional`);
+}
+
+const notificationParametersJsonField = notificationField('notificationParametersJson');
+
+assert.equal(notificationParametersJsonField.type, 'json');
+assert.equal(notificationParametersJsonField.default, '{}');
+
+const createUserNotificationBody = createUserNotificationOperation.routing.request.body;
+
+const executeExpression = (expression, $parameter) =>
+	new Tournament((error) => {
+		throw error;
+	}).execute(expression.slice(1), {
+		JSON,
+		Object,
+		Array,
+		$parameter,
+	});
+
+const assertRejectsNonObjectJson = (expression, parameterName, baseParameters) => {
+	for (const [inputName, value] of [
+		['JSON array', '[]'],
+		['array', []],
+		['JSON scalar string', '"value"'],
+		['scalar string', 'value'],
+		['JSON scalar number', '42'],
+		['scalar number', 42],
+		['JSON null', 'null'],
+		['null', null],
+		['malformed JSON', '{'],
+	]) {
+		assert.throws(
+			() => executeExpression(expression, { ...baseParameters, [parameterName]: value }),
+			undefined,
+			`${parameterName} should reject ${inputName}`,
+		);
+	}
+};
+
+assert.equal(typeof createUserNotificationBody, 'string');
+for (const bodyField of ['MOMENT', 'messageId', 'source', 'universe', 'joinExperience', 'analyticsData']) {
+	assert.ok(
+		createUserNotificationBody.includes(bodyField),
+		`Create User Notification body should map ${bodyField}`,
+	);
+}
+
+const notificationBodyWithoutOptionalValues = executeExpression(createUserNotificationBody, {
+	universeId: '123456',
+	notificationMessageId: 'welcome-message',
+	notificationParametersJson: '{}',
+	notificationLaunchData: '',
+	notificationAnalyticsCategory: '',
+});
+
+assert.deepEqual(notificationBodyWithoutOptionalValues, {
+	source: {
+		universe: 'universes/123456',
+	},
+	payload: {
+		type: 'MOMENT',
+		messageId: 'welcome-message',
+	},
+});
+
+const notificationBodyWithOptionalValues = executeExpression(createUserNotificationBody, {
+	universeId: '123456',
+	notificationMessageId: 'welcome-message',
+	notificationParametersJson:
+		'{"playerName":{"stringValue":"Ada"},"score":{"int64Value":"42"}}',
+	notificationLaunchData: 'destination=inventory',
+	notificationAnalyticsCategory: 'onboarding',
+});
+
+assert.deepEqual(notificationBodyWithOptionalValues, {
+	source: {
+		universe: 'universes/123456',
+	},
+	payload: {
+		type: 'MOMENT',
+		messageId: 'welcome-message',
+		parameters: {
+			playerName: {
+				stringValue: 'Ada',
+			},
+			score: {
+				int64Value: '42',
+			},
+		},
+		joinExperience: {
+			launchData: 'destination=inventory',
+		},
+		analyticsData: {
+			category: 'onboarding',
+		},
+	},
+});
+
+for (const fieldName of ['joinExperience', 'analyticsData']) {
+	assert.ok(
+		Object.hasOwn(notificationBodyWithOptionalValues.payload, fieldName),
+		`Create User Notification should put ${fieldName} inside payload`,
+	);
+	assert.equal(
+		Object.hasOwn(notificationBodyWithOptionalValues, fieldName),
+		false,
+		`Create User Notification should not put ${fieldName} at the request root`,
+	);
+}
+
+assert.deepEqual(
+	executeExpression(createUserNotificationBody, {
+		universeId: '123456',
+		notificationMessageId: 'welcome-message',
+		notificationParametersJson: {
+			playerName: {
+				stringValue: 'Ada',
+			},
+		},
+		notificationLaunchData: '',
+		notificationAnalyticsCategory: '',
+	}),
+	{
+		source: {
+			universe: 'universes/123456',
+		},
+		payload: {
+			type: 'MOMENT',
+			messageId: 'welcome-message',
+			parameters: {
+				playerName: {
+					stringValue: 'Ada',
+				},
+			},
+		},
+	},
+);
+
+assertRejectsNonObjectJson(createUserNotificationBody, 'notificationParametersJson', {
+	universeId: '123456',
+	notificationMessageId: 'welcome-message',
+	notificationLaunchData: '',
+	notificationAnalyticsCategory: '',
+});
+
 const universeOperationParameter = node.description.properties.find(
 	(parameter) =>
 		parameter.name === 'operation' && parameter.displayOptions?.show?.resource?.includes('universe'),
@@ -115,6 +317,7 @@ const expectedBansAndBlocksOperationMethods = {
 	get_user_restrictions_universe: 'GET',
 	list_place_user_restrictions: 'GET',
 	list_user_restriction_logs: 'GET',
+	update_universe: 'PATCH',
 	update_place_user_restriction: 'PATCH',
 	update_user_restriction_universe: 'PATCH',
 };
@@ -130,6 +333,64 @@ for (const [operationValue, method] of Object.entries(expectedBansAndBlocksOpera
 	);
 	assert.equal(universeOperationsByValue[operationValue].routing.request.method, method);
 }
+
+const updateUniverseOperation = universeOperationsByValue.update_universe;
+
+assert.equal(
+	updateUniverseOperation.routing.request.url,
+	'=/cloud/v2/universes/{{ $parameter["universeId"] }}',
+);
+assert.deepEqual(updateUniverseOperation.routing.request.qs, {
+	updateMask: '={{ $parameter["universeUpdateMask"] }}',
+});
+const updateUniverseBody = updateUniverseOperation.routing.request.body;
+
+assert.equal(typeof updateUniverseBody, 'string');
+assert.ok(
+	updateUniverseBody.includes('universeUpdateJson'),
+	'Update Universe body should map universeUpdateJson',
+);
+assert.deepEqual(
+	executeExpression(updateUniverseBody, {
+		universeUpdateJson: '{"name":"Updated Universe"}',
+	}),
+	{ name: 'Updated Universe' },
+);
+assert.deepEqual(
+	executeExpression(updateUniverseBody, {
+		universeUpdateJson: { name: 'Updated Universe' },
+	}),
+	{ name: 'Updated Universe' },
+);
+assertRejectsNonObjectJson(updateUniverseBody, 'universeUpdateJson', {});
+
+const universeIdParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'universeId' && parameter.displayOptions?.show?.resource?.includes('universe'),
+);
+
+assert.ok(universeIdParameter, 'Universe ID field should exist');
+assert.ok(
+	universeIdParameter.displayOptions.show.operation.includes('update_universe'),
+	'Universe ID field should display for Update Universe',
+);
+
+const updateUniverseFieldsByName = {};
+
+for (const fieldName of ['universeUpdateMask', 'universeUpdateJson']) {
+	const field = node.description.properties.find(
+		(parameter) =>
+			parameter.name === fieldName &&
+			parameter.displayOptions?.show?.resource?.includes('universe') &&
+			parameter.displayOptions?.show?.operation?.includes('update_universe'),
+	);
+
+	assert.ok(field, `Update Universe field ${fieldName} should exist`);
+	assert.equal(field.required, true, `Update Universe field ${fieldName} should be required`);
+	updateUniverseFieldsByName[fieldName] = field;
+}
+
+assert.equal(updateUniverseFieldsByName.universeUpdateMask.type, 'string');
+assert.equal(updateUniverseFieldsByName.universeUpdateJson.type, 'json');
 
 const userRestrictionsQueryParameter = node.description.properties.find(
 	(parameter) => parameter.name === 'user_restrictions_query',
@@ -202,6 +463,14 @@ for (const [operationValue, method] of Object.entries(expectedGroupOperationMeth
 
 assert.ok(!groupOperationsByValue.get_shout, 'Group shout read operation should be sunset');
 assert.ok(!groupOperationsByValue.update_group_shout, 'Group shout update operation should be sunset');
+assert.ok(!groupOperationsByValue.ban_user, 'Group ban operation should be removed');
+assert.ok(!groupOperationsByValue.unban_user, 'Group unban operation should be removed');
+
+const groupUserIdParameter = node.description.properties.find(
+	(parameter) => parameter.name === 'userId' && parameter.displayOptions?.show?.resource?.includes('group'),
+);
+
+assert.equal(groupUserIdParameter, undefined, 'Group-only User ID field should be removed');
 
 const groupForumPostsQueryParameter = node.description.properties.find(
 	(parameter) => parameter.name === 'group_forum_posts_query',

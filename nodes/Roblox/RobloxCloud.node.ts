@@ -12,6 +12,10 @@ import {
 	luauExecutionOperations,
 	luauExecutionFields,
 } from './LuauExecution/LuauExecutionDescription';
+import {
+	notificationOperations,
+	notificationFields,
+} from './Notification/NotificationDescription';
 export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Cloud',
@@ -64,6 +68,10 @@ export class RobloxCloud implements INodeType {
 						value: 'luauExecution',
 					},
 					{
+						name: 'Notification',
+						value: 'notification',
+					},
+					{
 						name: 'Place',
 						value: 'place',
 					},
@@ -103,6 +111,9 @@ export class RobloxCloud implements INodeType {
 
 			...luauExecutionOperations,
 			...luauExecutionFields,
+
+			...notificationOperations,
+			...notificationFields,
 
 			...userOperations,
 			...userFields,
