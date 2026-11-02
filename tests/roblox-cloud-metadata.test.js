@@ -41,9 +41,17 @@ const node = new RobloxCloud();
 const legacyNode = new RobloxLegacy();
 const compiledNode = new CompiledRobloxCloud();
 
+// preSend hooks are functions, so compare them by name rather than by reference.
+const comparableMetadata = (value) =>
+	JSON.parse(
+		JSON.stringify(value, (_key, entry) =>
+			typeof entry === 'function' ? `[Function ${entry.name}]` : entry,
+		),
+	);
+
 assert.deepEqual(
-	compiledNode.description,
-	node.description,
+	comparableMetadata(compiledNode.description),
+	comparableMetadata(node.description),
 	'Compiled Roblox Cloud node metadata should match the TypeScript source',
 );
 

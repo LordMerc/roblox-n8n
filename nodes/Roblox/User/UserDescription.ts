@@ -45,6 +45,18 @@ export const userOperations: INodeProperties[] = [
 				},
 			},
 			{
+				name: 'Get Thumbnail Operation',
+				value: 'get_thumbnail_operation',
+				description: 'Poll a user thumbnail generation operation until it is done',
+				action: 'Get thumbnail operation',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/users/{{ $parameter["userId"] }}/operations/{{ $parameter["operationId"] }}',
+					},
+				},
+			},
+			{
 				name: 'Get User',
 				value: 'get_user',
 				description: 'Retrieve a user',
@@ -53,6 +65,24 @@ export const userOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/users/{{ $parameter["userId"] || $json?.userId || $json?.query?.userId }}',
+					},
+				},
+			},
+			{
+				name: 'List Inventory Items (Beta)',
+				value: 'list_inventory_items',
+				description:
+					"List items in a user's inventory, such as game passes, badges, and assets. Requires user.inventory-item:read unless the inventory is public.",
+				action: 'List inventory items',
+				routing: {
+					request: {
+						method: 'GET',
+						url: '=/cloud/v2/users/{{ $parameter["userId"] }}/inventory-items',
+						qs: {
+							maxPageSize: '={{ $parameter["inventory_items_query"].maxPageSize }}',
+							pageToken: '={{ $parameter["inventory_items_query"].pageToken }}',
+							filter: '={{ $parameter["inventory_items_query"].filter }}',
+						},
 					},
 				},
 			},
@@ -72,9 +102,71 @@ export const userFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['user'],
-				operation: ['get_user', 'generate_thumbnail'],
+				operation: [
+					'get_user',
+					'generate_thumbnail',
+					'get_thumbnail_operation',
+					'list_inventory_items',
+				],
 			},
 		},
+	},
+	{
+		displayName: 'Operation ID',
+		name: 'operationId',
+		type: 'string',
+		default: '',
+		required: true,
+		description:
+			'The operation ID returned by Generate User Thumbnail (the last segment of its path)',
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['get_thumbnail_operation'],
+			},
+		},
+	},
+	{
+		displayName: 'Query Parameters',
+		name: 'inventory_items_query',
+		type: 'collection',
+		default: {},
+		description: "The request's query parameters",
+		displayOptions: {
+			show: {
+				resource: ['user'],
+				operation: ['list_inventory_items'],
+			},
+		},
+		options: [
+			{
+				displayName: 'Filter',
+				name: 'filter',
+				type: 'string',
+				default: '',
+				placeholder: 'gamePassIds=123456;badgeIds=789',
+				description:
+					'Filter the returned items, for example by gamePassIds, badgeIds, assetIds, or inventoryItemAssetTypes. See the Roblox inventory filtering docs.',
+			},
+			{
+				displayName: 'Max Page Size',
+				name: 'maxPageSize',
+				type: 'number',
+				typeOptions: {
+					minValue: 1,
+				},
+				default: 50,
+				description: 'The maximum number of items to return',
+			},
+			{
+				displayName: 'Page Token',
+				name: 'pageToken',
+				type: 'string',
+				typeOptions: { password: true },
+				default: '',
+				description: 'A page token from a previous call, used to fetch the next page',
+			},
+		],
 	},
 	{
 		displayName: 'Universe ID',

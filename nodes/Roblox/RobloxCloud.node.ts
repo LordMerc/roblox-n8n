@@ -12,10 +12,19 @@ import {
 	luauExecutionOperations,
 	luauExecutionFields,
 } from './LuauExecution/LuauExecutionDescription';
+import { notificationOperations, notificationFields } from './Notification/NotificationDescription';
+import { analyticsOperations, analyticsFields } from './Analytics/AnalyticsDescription';
+import { assetOperations, assetFields } from './Asset/AssetDescription';
 import {
-	notificationOperations,
-	notificationFields,
-} from './Notification/NotificationDescription';
+	developerProductOperations,
+	gamePassOperations,
+	monetizationFields,
+} from './Monetization/MonetizationDescription';
+import { secretOperations, secretFields } from './Secret/SecretDescription';
+import {
+	serverManagementOperations,
+	serverManagementFields,
+} from './ServerManagement/ServerManagementDescription';
 export class RobloxCloud implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Roblox Cloud',
@@ -25,7 +34,8 @@ export class RobloxCloud implements INodeType {
 		usableAsTool: true,
 		version: 1.5,
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
-		description: 'Access Roblox Open Cloud APIs for groups, users, universes, places, storage, and more',
+		description:
+			'Access Roblox Open Cloud APIs for groups, users, universes, places, assets, storage, and more',
 		defaults: {
 			name: 'Roblox Cloud',
 		},
@@ -52,12 +62,28 @@ export class RobloxCloud implements INodeType {
 				noDataExpression: true,
 				options: [
 					{
+						name: 'Analytics',
+						value: 'analytics',
+					},
+					{
+						name: 'Asset',
+						value: 'asset',
+					},
+					{
 						name: 'Config',
 						value: 'config',
 					},
 					{
+						name: 'Developer Product',
+						value: 'developerProduct',
+					},
+					{
 						name: 'Engine',
 						value: 'engine',
+					},
+					{
+						name: 'Game Pass',
+						value: 'gamePass',
 					},
 					{
 						name: 'Group',
@@ -74,6 +100,14 @@ export class RobloxCloud implements INodeType {
 					{
 						name: 'Place',
 						value: 'place',
+					},
+					{
+						name: 'Secret',
+						value: 'secret',
+					},
+					{
+						name: 'Server Management',
+						value: 'serverManagement',
 					},
 					{
 						name: 'Storage',
@@ -94,6 +128,22 @@ export class RobloxCloud implements INodeType {
 				],
 				default: 'group',
 			},
+			...analyticsOperations,
+			...analyticsFields,
+
+			...assetOperations,
+			...assetFields,
+
+			...developerProductOperations,
+			...gamePassOperations,
+			...monetizationFields,
+
+			...secretOperations,
+			...secretFields,
+
+			...serverManagementOperations,
+			...serverManagementFields,
+
 			...configOperations,
 			...configFields,
 

@@ -1,4 +1,6 @@
 import type { INodeProperties } from 'n8n-workflow';
+import { placeFilePreSend } from '../GenericFunctions';
+
 export const placeOperations: INodeProperties[] = [
 	{
 		displayName: 'Operation',
@@ -20,6 +22,25 @@ export const placeOperations: INodeProperties[] = [
 					request: {
 						method: 'GET',
 						url: '=/cloud/v2/universes/{{ $parameter["universeId"] }}/places/{{ $parameter["placeId"] }}',
+					},
+				},
+			},
+			{
+				name: 'Publish Place (Beta)',
+				value: 'publish_place',
+				description:
+					'Upload an .rbxl or .rbxlx file as a new version of a place, and optionally publish it',
+				action: 'Publish place',
+				routing: {
+					request: {
+						method: 'POST',
+						url: '=/universes/v1/{{ $parameter["universeId"] }}/places/{{ $parameter["placeId"] }}/versions',
+						qs: {
+							versionType: '={{ $parameter["placeVersionType"] }}',
+						},
+					},
+					send: {
+						preSend: [placeFilePreSend],
 					},
 				},
 			},
@@ -57,6 +78,7 @@ export const placeFields: INodeProperties[] = [
 				resource: ['place'],
 				operation: [
 					'get_place',
+					'publish_place',
 					'update_place',
 					'get_user_restriction_universe',
 					'get_user_restrictions_universe',
@@ -75,7 +97,46 @@ export const placeFields: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ['place'],
-				operation: ['get_place', 'update_place'],
+				operation: ['get_place', 'publish_place', 'update_place'],
+			},
+		},
+	},
+	{
+		displayName: 'Version Type',
+		name: 'placeVersionType',
+		type: 'options',
+		options: [
+			{
+				name: 'Published',
+				value: 'Published',
+				description: 'Save the file and publish it so new servers use it',
+			},
+			{
+				name: 'Saved',
+				value: 'Saved',
+				description: 'Save the file as a new version without publishing it',
+			},
+		],
+		default: 'Published',
+		displayOptions: {
+			show: {
+				resource: ['place'],
+				operation: ['publish_place'],
+			},
+		},
+	},
+	{
+		displayName: 'Input Binary Field',
+		name: 'binaryPropertyName',
+		type: 'string',
+		default: 'data',
+		required: true,
+		description:
+			'Name of the input binary field holding the place file. Files ending in .rbxlx are sent as XML; anything else is sent as binary .rbxl.',
+		displayOptions: {
+			show: {
+				resource: ['place'],
+				operation: ['publish_place'],
 			},
 		},
 	},
