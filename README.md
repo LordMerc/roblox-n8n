@@ -17,22 +17,36 @@ This project provides custom community nodes for [n8n](https://n8n.io) that inte
 - Luau Execution Open Cloud support for creating tasks, polling task state, reading logs, and creating binary inputs
 - Group Forum Open Cloud support for listing forum categories, posts, and comments
 - Bans and Blocks Open Cloud support for universe-level and place-level user restrictions
+- Assets Open Cloud support for uploading and updating assets from n8n binary data, versions, rollback, archive, and quotas (Beta)
+- Place publishing from an `.rbxl` or `.rbxlx` binary file (Beta)
+- Developer product and game pass management, including icon uploads (Beta)
+- Server management for listing game servers, reading server logs, and forecasting and launching restarts (Beta)
+- Analytics queries for metric time series and dimension values (Beta)
+- Universe secrets management with built-in libsodium sealed-box encryption (Beta)
+- User inventory lookups for ownership checks (Beta)
+
+> ℹ️ Operations marked **(Beta)** in the node call Roblox endpoints that Roblox labels Beta. They work with API keys today, but Roblox may change them.
 
 > ✅ Ideal for developers using Roblox + automation tools like n8n to build dashboards, pipelines, and custom tools.
 
 ## Current Nodes and Arguments
 
 - `Roblox Cloud`
-  - `Config`: operations `get_config_values`, `get_config_full`, `get_config_draft`, `update_config_draft`, `reset_config_draft`, `overwrite_config_draft`, `publish_config_draft`, `list_config_revisions`, `restore_config_revision`. Arguments: `universeId`, `repository`, `entriesJson`, `previousDraftHash`, `draftHash`, `publishMessage`, `deploymentStrategy`, `revisionId`, `config_revision_filters` (`endTime`, `maxPageSize`, `searchKey`, `skip`, `sortKey`, `sortOrder`, `startTime`).
+  - `Analytics` (Beta): operations `query_metrics`, `query_dimension_values`, `get_metrics_operation`, `get_dimension_values_operation`. Arguments: `universeId`, `operationId`, `analyticsMetric`, `analyticsStartTime`, `analyticsEndTime` (times without an offset are treated as UTC), `analyticsGranularity`, `analyticsDimensions` (comma-separated), `analytics_options` (`breakdown`, `filterJson`, `limit`). Queries can return a long-running operation; poll it with the matching Get Operation call.
+  - `Asset` (Beta): operations `create_asset`, `update_asset`, `get_asset`, `get_asset_operation`, `list_asset_versions`, `get_asset_version`, `rollback_asset_version`, `archive_asset`, `restore_asset`, `list_asset_quotas`. Arguments: `assetId`, `assetVersionNumber`, `operationId`, `userId`, `assetType` (`Animation`, `Audio`, `Decal`, `Image`, `Mesh`, `Model`, `Video`), `assetDisplayName`, `assetDescription`, `assetCreatorType`, `assetCreatorId`, `assetCreateOptions` (`assetPrivacy`, `expectedPrice`), `assetUpdateJson` (metadata; the update mask is built from its keys), `assetUpdateContent`, `binaryPropertyName`, `assetContentType`, `assetReadMask`, `asset_versions_query` (`maxPageSize`, `pageToken`), `asset_quota_query` (`filter`, `maxPageSize`, `pageToken`). Create and Update return an operation; poll it with `get_asset_operation`.: operations `get_config_values`, `get_config_full`, `get_config_draft`, `update_config_draft`, `reset_config_draft`, `overwrite_config_draft`, `publish_config_draft`, `list_config_revisions`, `restore_config_revision`. Arguments: `universeId`, `repository`, `entriesJson`, `previousDraftHash`, `draftHash`, `publishMessage`, `deploymentStrategy`, `revisionId`, `config_revision_filters` (`endTime`, `maxPageSize`, `searchKey`, `skip`, `sortKey`, `sortOrder`, `startTime`).
+  - `Developer Product` (Beta): operations `create_developer_product`, `get_developer_product`, `list_developer_products`, `update_developer_product`. Arguments: `universeId`, `productId`, `productName`, `productFields` (`name`, `description`, `price`, `isForSale`, `isRegionalPricingEnabled`, `isManagedPricingEnabled`, `storePageEnabled`), `productImageBinaryProperty`, `product_list_query` (`pageSize`, `pageToken`).
   - `Engine`: operation `get_operation`. Arguments: `operationPath`.
+  - `Game Pass` (Beta): operations `create_game_pass`, `get_game_pass`, `list_game_passes`, `update_game_pass`. Arguments: `universeId`, `gamePassId`, `productName`, `productFields` (`name`, `description`, `price`, `isForSale`, `isRegionalPricingEnabled`, `isManagedPricingEnabled`), `productImageBinaryProperty`, `product_list_query` (`pageSize`, `pageToken`).
   - `Group`: operations `accept_join_request`, `assign_member_role`, `decline_join_request`, `get_audit_log`, `get_group`, `get_group_policies`, `get_join_requests`, `get_manageable_groups`, `get_memberships`, `get_pending_groups`, `get_role`, `get_roles`, `get_settings`, `list_forum_categories`, `list_forum_comments`, `list_forum_posts`, `unassign_member_role`, `update_description`, `update_member_role`, `update_notification_preference`, `update_settings`. Arguments: `groupId`, `joinRequestId`, `membershipId`, `forumCategoryId`, `postId`, `userId`, `roleId`, `description`, `groupPolicyGroupIds`, `arguments_memberships` (`maxPageSize`, `pageToken`, `filter`), `group_join_requests_query` (`maxPageSize`, `pageToken`, `filter`), `group_roles_query` (`maxPageSize`, `pageToken`), `group_forum_categories_query` (`maxPageSize`, `pageToken`, `filter`), `group_forum_posts_query` (`maxPageSize`, `pageToken`, `filter`, `view`), `group_forum_comments_query` (`maxPageSize`, `pageToken`, `filter`), `group_audit_log_query` (`actionType`, `userId`, `limit`, `cursor`, `sortOrder`), `group_settings_update`, and `group_notification_preference`.
   - `Luau Execution`: operations `create_session_task_binary_input`, `create_session_task`, `create_session_task_for_version`, `get_session_task`, `list_session_task_logs`. Arguments: `universeId`, `placeId`, `versionId`, `luauExecutionSessionId`, `taskId`, `binaryInputSize`, `script`, `timeout`, `binaryInput`, `enableBinaryOutput`, `luauExecutionTaskView`, `luau_execution_task_logs_query` (`maxPageSize`, `pageToken`, `view`).
   - `Notification`: operation `create_user_notification`. Arguments: `userId` (destination user), `universeId` (source universe), `notificationMessageId` (Creator Dashboard notification-string asset ID), `notificationParametersJson` (optional JSON parameter values using `stringValue` or `int64Value` objects), `notificationLaunchData` (optional, maximum 200 bytes), and `notificationAnalyticsCategory` (optional analytics grouping category).
-  - `Place`: operations `get_place`, `update_place`. Arguments: `universeId`, `placeId`, `place_update_mask` (`displayName`, `description`, `serverSize`).
+  - `Place`: operations `get_place`, `publish_place` (Beta), `update_place`. Arguments: `universeId`, `placeId`, `placeVersionType` (`Published` or `Saved`), `binaryPropertyName` (files ending in `.rbxlx` are sent as XML, anything else as binary `.rbxl`), `place_update_mask` (`displayName`, `description`, `serverSize`).
+  - `Secret` (Beta): operations `list_secrets`, `get_public_key`, `create_secret`, `update_secret`, `delete_secret`. Arguments: `universeId`, `secretId`, `secretContentMode` (`plaintext` encrypts for you with the universe public key; `encrypted` sends content you already sealed), `secretContent`, `secretKeyId` (only for pre-encrypted content), `secretDomain`, `secret_list_query` (`limit`, `cursor`).
+  - `Server Management` (Beta): operations `list_game_servers`, `list_game_server_logs`, `get_game_server_filter_options`, `list_restarts`, `forecast_restart`, `launch_restart`. Arguments: `universeId`, `placeId`, `placeVersionNumber`, `jobId`, `filterOptionsFilter`, `server_query` (`filter`, `maxPageSize`, `orderBy`, `pageToken`), `restart_options` (`bleedOffDurationMinutes`, `placesJson`, `attributesJson`).
   - `Storage`: operations include data store control (`list_data_stores`, `delete_data_store`, `undelete_data_store`, `snapshot_data_stores`), data store entries and scoped entries (`list`, `get`, `create`, `update`, `delete`, `increment`, `list revisions`), memory store queues (`create`, `read`, `discard`), memory store sorted maps (`list`, `get`, `create`, `update`, `delete`), memory store flush (`flush_memory_store`, `get_memory_store_flush_operation`), and ordered data store entries (`list`, `get`, `create`, `update`, `delete`, `increment`). Arguments: `universeId`, `dataStoreId`, `scopeId`, `entryId`, `queueId`, `sortedMapId`, `itemId`, `orderedDataStoreId`, `operationId`, `dataStoreEntryJson`, `incrementDataStoreEntryJson`, `memoryStoreQueueItemJson`, `discardMemoryStoreQueueItemsJson`, `memoryStoreSortedMapItemJson`, `orderedDataStoreEntryJson`, `incrementOrderedDataStoreEntryJson`, query/update collections for list, create, read, and update operations (`filter`, `maxPageSize`, `pageToken`, `showDeleted`, `id`, `allowMissing`, `allOrNothing`, `count`, `invisibilityWindow`, `orderBy`).
   - `Team Create`: operations `close_team_test_session`, `get_active_session_members`, `get_many_team_create_settings`, `get_team_create_settings`, `remove_team_create_membership`, `update_team_create_settings`. Arguments: `placeId`, `gameId`, `team_create_pagination` (`cursor`, `limit`), `universeId`, `isEnabled`, `userId`, `universeIds`.
   - `Universe`: operations `generate_speech_asset`, `get_place_user_restriction`, `get_universe`, `get_user_restriction_universe`, `get_user_restrictions_universe`, `list_place_user_restrictions`, `list_user_restriction_logs`, `publish_universe_message`, `restart_universe_servers`, `update_universe`, `update_place_user_restriction`, `update_user_restriction_universe`. Arguments: `universeId`, `placeId`, `userRestrictionId`, `topic`, `message`, `user_restrictions_query` (`maxPageSize`, `pageToken`), `arguments_list_user_restriction_logs` (`filter`, `maxPageSize`, `pageToken`), `idempotencyKeyKey`, `idempotencyKeyFirstSent`, `universeUpdateMask` (required comma-separated writable fields), `universeUpdateJson` (required JSON object containing only writable fields), `userRestrictionUpdateMask`, `user_restriction_game_join_restriction` (`active`, `displayReason`, `duration`, `excludeAltAccounts`, `privateReason`, `startTime`), `speechText`, `speechStyleFields` (`pitch`, `speed`, `voiceId`).
-  - `User`: operations `generate_thumbnail`, `get_subscription`, `get_user`. Arguments: `userId`, `universeId`, `subscriptionProductId`, `subscriptionId`, `view`, `arguments_thumbnail_generation` (`size`, `format`, `shape`).
+  - `User`: operations `generate_thumbnail`, `get_thumbnail_operation`, `get_subscription`, `get_user`, `list_inventory_items` (Beta). Arguments: `userId`, `operationId`, `universeId`, `subscriptionProductId`, `subscriptionId`, `view`, `arguments_thumbnail_generation` (`size`, `format`, `shape`), `inventory_items_query` (`filter`, `maxPageSize`, `pageToken`).
 - `Roblox Legacy`
   - `Legacy Place`: operations `get_favorites_count`, `get_universe_products`. Arguments: `universeId`, `universeIds`.
   - `Legacy User`: operations `get_username_history`, `get_usernames_from_user_ids`. Arguments: `userId`, `arguments_username_history` (`limit`, `cursor`, `sortOrder`), `arguments_user_names_from_user_ids` (`userIds`, `excludeBannedUsers`).
@@ -74,6 +88,26 @@ The Storage resource uses the existing Roblox Cloud API key credential. Standard
 ## Luau Execution API Scopes
 
 The Luau Execution resource uses the existing Roblox Cloud API key credential. Creating session tasks and binary inputs requires `universe.place.luau-execution-session:write`. Reading session tasks and logs requires `universe.place.luau-execution-session:read`; Roblox also allows those reads with `universe.place.luau-execution-session:write`.
+
+## Asset and Place Publishing API Scopes
+
+Asset reads (`get_asset`, versions, operations, quotas) require `asset:read`. Creating, updating, rolling back, archiving, and restoring assets require `asset:read` and `asset:write`. Uploads come from an n8n binary field, up to 20 MB per file. Publish Place requires `universe-places:write` and is limited by Roblox to 30 requests per minute per API key owner.
+
+## Developer Product and Game Pass API Scopes
+
+Developer product reads require `developer-product:read` and writes require `developer-product:write`. Game pass reads require `game-pass:read` and writes require `game-pass:write`. To attach an icon, put the image in an n8n binary field and enter its name in `productImageBinaryProperty`.
+
+## Server Management and Analytics API Scopes
+
+Listing game servers, reading server logs, getting filter options, listing restarts, and forecasting restarts require `universe:read`. Launching a restart requires `universe:write`. Analytics queries and their operations require `universe.analytics:read`.
+
+## Secrets API Scopes
+
+Listing secrets and getting the public key require `universe.secret:read`. Creating, updating, and deleting secrets require `universe.secret:write`. In plain-text mode the node fetches the universe public key and encrypts the content with a libsodium sealed box (using `tweetnacl` and `blakejs`) before sending it, so the plain value never leaves n8n unencrypted.
+
+## Inventory API Scopes
+
+List Inventory Items requires `user.inventory-item:read` unless the user has made their inventory public.
 
 ## Prerequisites
 
